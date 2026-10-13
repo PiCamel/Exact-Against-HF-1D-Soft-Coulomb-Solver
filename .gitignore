@@ -1,0 +1,94 @@
+# ==========================================
+# Operating System Files
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.lnk
+*.cab
+
+# Linux
+.directory
+*~
+.fuse_hidden*
+.directory
+.trash/
+
+# ==========================================
+# Common IDEs and Text Editors
+# ==========================================
+# Visual Studio Code
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+
+# IntelliJ / WebStorm / PyCharm / Android Studio
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# vim
+.*.sw[a-z]
+*.un~
+Session.vim
+
+# ==========================================
+# Environment Variables & Secrets (CRITICAL)
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+*.pem
+*.key
+*.cert
+
+# ==========================================
+# Diagnostics, Logs, and Caches
+# ==========================================
+*.log
+logs/
+*.sql
+*.sqlite
+.cache/
+.sass-cache/
+
+# ==========================================
+# Packages and Compressed Archives
+# ==========================================
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# ==========================================
+# Standard Dependencies & Build Outputs
+# ==========================================
+node_modules/
+bower_components/
+dist/
+build/
+out/
+bin/
+obj/
