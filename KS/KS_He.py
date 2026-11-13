@@ -1,14 +1,18 @@
-# Kohn-Sham solver for a single nucleus of charge Z (Z = 1 is H-, Z = 2 is He).
+# Kohn-Sham solver for the He atom: one nucleus of charge Z = 2 at x = 0.
+# Same loop as KS_H_minus.py, only the nuclear charge changes (Z = 2 instead of 1).
 # For 2 electrons in one orbital, KS with exact exchange (v_x = -v_H/2, v_c = 0) is identical to restricted Hartree-Fock.
 # The orbital lives on an N-point grid, i.e. N unknowns instead of N^2.
 
 import numpy as np
 import scipy as s
 import matplotlib.pyplot as plt
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")) # so common.py (one folder up) can be imported
 from common import make_grid, v_ext, T_1e, V_H, one_electron
 
 
-def run(Z=1, L=10.0, h=0.1, alpha=0.4, err_thres=1e-6, max_iter=1000):
+def run(L=10.0, h=0.1, alpha=0.4, err_thres=1e-6, max_iter=1000):
+  Z = 2 # helium nucleus
   h_KS = h
   x_KS, N_KS = make_grid(L, h_KS)
 
@@ -62,7 +66,7 @@ def run(Z=1, L=10.0, h=0.1, alpha=0.4, err_thres=1e-6, max_iter=1000):
 
 
 if __name__ == "__main__":
-  res = run(Z=1)
+  res = run()
   print("integral of n        :", res["h"] * np.sum(res["n"]))      # must be 2
   print("E_KS (term by term)  :", res["E"])
   # To see if any unexpected behaviour is there.
@@ -71,5 +75,5 @@ if __name__ == "__main__":
   plt.plot(res["x"], res["n"])
   plt.xlabel("x (bohr)")
   plt.ylabel("n(x)")
-  plt.title("Kohn-Sham (= RHF) density, H-")
+  plt.title("Kohn-Sham (= RHF) density, He")
   plt.show()

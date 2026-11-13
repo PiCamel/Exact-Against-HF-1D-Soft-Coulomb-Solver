@@ -1,10 +1,12 @@
-# Exact two-electron solver for a single nucleus of charge Z (Z = 1 is H-, Z = 2 is He).
+# Exact two-electron solver for a single nucleus of charge Z (default Z = 1, H-). He (Z = 2) has its own file, exact_He.py.
 # The two-electron wavefunction Psi(x1, x2) lives on an N x N grid, i.e. N^2 unknowns.
 # This is the benchmark every approximate method is compared against.
 
 import numpy as np
 import scipy.sparse.linalg as spla
 import matplotlib.pyplot as plt
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")) # so common.py (one folder up) can be imported
 from common import make_grid, v_1atom, H_two_electron, A_SOFT
 
 

@@ -1,8 +1,5 @@
 # Exact vs Kohn–Sham DFT for a 1D two-electron system
-### - By
-### Siddharth Shivakumar (EP25BTECH11027), 
-### Kushal R (EP25BTECH11012), and 
-### Zulfqar Farooq (EP25BTECH11036)
+##### - By Siddharth Shivakumar (EP25BTECH11027), Kushal R (EP25BTECH11012), and Zulfqar Farooq (EP25BTECH11036)
 
 EP4210 Computational Physics project.
 
@@ -40,26 +37,42 @@ H = -½ ∂²/∂x₁² - ½ ∂²/∂x₂² + v_ext(x₁) + v_ext(x₂) + w(x�
 Requirements: Python 3 with `numpy`, `scipy` and `matplotlib`.
 
 ```bash
-python compare.py          # runs everything: writes figures/*.png and results/results.md (about a minute)
-python KS_H2.py            # any single analysis file runs on its own, prints its energies and plots n(x)
+python compare.py          # runs every solver and saves the comparison plots in results/ (about a minute)
+python KS/KS_H2.py         # any single analysis file runs on its own, prints its energies and plots n(x)
 ```
 
 ---
 
 ## 3. Files
 
+```
+common.py          shared building blocks, imported by every solver
+compare.py         runs every solver and makes the comparison figures
+exact/             exact two-electron solves (the benchmark)
+    exact_H_minus.py   exact_He.py   exact_H2.py
+KS/                Kohn–Sham with exact exchange (= restricted Hartree–Fock)
+    KS_H_minus.py      KS_He.py      KS_H2.py
+LDA/               Kohn–Sham with LDA exchange (to do)
+    LDA_H_minus.py     LDA_He.py     LDA_H2.py
+```
+
+Each method has one folder, and each folder has one file per system: H⁻ (Z = 1), He (Z = 2) and H₂.
+
 | File | What it does |
 |---|---|
 | `common.py` | Shared building blocks: the grid, the soft-Coulomb interaction `w`, external potentials, the kinetic-energy matrix, the two-electron Hamiltonian, the Hartree potential and the one-electron solver. |
-| `exact_H_minus.py` | Exact two-electron ground state for one nucleus of charge Z (Z = 1: H⁻, Z = 2: He). |
-| `exact_H2.py` | Exact two-electron ground state for H₂ at internuclear distance R. |
-| `KS_H_minus.py` | Kohn–Sham with exact exchange for one nucleus. For two electrons this is restricted Hartree–Fock (RHF). |
-| `KS_H2.py` | Kohn–Sham with exact exchange (= RHF) for H₂. |
-| `LDA_H_minus.py` | **To do.** Kohn–Sham with LDA exchange for one nucleus. The file currently holds step-by-step instructions and target numbers. |
-| `LDA_H2.py` | **To do.** Kohn–Sham with LDA exchange for H₂. Instructions and target numbers. |
-| `compare.py` | Runs every analysis, makes all figures and writes `results/results.md`. It includes the LDA results automatically once both LDA files define `run()`. |
+| `exact/exact_H_minus.py` | Exact two-electron ground state for one nucleus of charge Z (default Z = 1: H⁻). |
+| `exact/exact_He.py` | The same for He (Z = 2). |
+| `exact/exact_H2.py` | Exact two-electron ground state for H₂ at internuclear distance R. |
+| `KS/KS_H_minus.py` | Kohn–Sham with exact exchange for one nucleus (default Z = 1: H⁻). For two electrons this is restricted Hartree–Fock (RHF). |
+| `KS/KS_He.py` | The same for He (Z = 2). |
+| `KS/KS_H2.py` | Kohn–Sham with exact exchange (= RHF) for H₂. |
+| `LDA/LDA_H_minus.py` | **To do.** Kohn–Sham with LDA exchange for H⁻. The file currently holds step-by-step instructions and target numbers. |
+| `LDA/LDA_He.py` | **To do.** The same for He. Instructions and target numbers. |
+| `LDA/LDA_H2.py` | **To do.** Kohn–Sham with LDA exchange for H₂. Instructions and target numbers. |
+| `compare.py` | Runs every solver and saves the energy and density comparison plots in `results/`. It includes the LDA results automatically once all three LDA files define `run()`. |
 
-Every analysis file has a `run(...)` function that returns a dictionary of results (energies, density, grid, convergence history), so `compare.py` can use it, plus a `__main__` block for running it alone.
+Every analysis file has a `run(...)` function that returns a dictionary of results (energies, density, grid, convergence history), so `compare.py` can use it, plus a `__main__` block for running it alone. Each solver file adds the project folder to `sys.path` at the top, so it can import `common.py` whether you run it as `python KS/KS_He.py` from the project folder or from inside its own folder.
 
 ### `common.py`
 
@@ -70,7 +83,7 @@ Every analysis file has a `run(...)` function that returns a dictionary of resul
 - `W_grid`, `V_H`: the Hartree potential v_H(x) = ∫ n(x′) w(x − x′) dx′ on the grid, `h * (W @ n)` with W_ij = w(xᵢ − xⱼ).
 - `one_electron(V, h, N)`: the lowest eigenpair of T + diag(V), normalized so that h Σ φ² = 1.
 
-### `exact_H_minus.py`, `exact_H2.py`
+### `exact/`: `exact_H_minus.py`, `exact_He.py`, `exact_H2.py`
 
 1. Build the sparse two-electron Hamiltonian on the N × N grid: N² unknowns, about 40,000 for N = 201.
 2. Find the lowest eigenpair with the sparse Lanczos solver `scipy.sparse.linalg.eigsh`.
@@ -78,7 +91,7 @@ Every analysis file has a `run(...)` function that returns a dictionary of resul
 4. Density: n(xᵢ) = 2 h Σⱼ Ψᵢⱼ².
 5. `exact_H2.py` adds the nuclear repulsion w(R) to get the total energy.
 
-### `KS_H_minus.py`, `KS_H2.py`: the self-consistent loop
+### `KS/`: `KS_H_minus.py`, `KS_He.py`, `KS_H2.py`: the self-consistent loop
 
 1. **Initial guess:** the lowest orbital with no electron–electron repulsion, n = 2φ².
 2. **Hartree potential:** v_H = h W n. It is built from both electrons, so it includes each electron repelling itself.
@@ -92,11 +105,11 @@ Every analysis file has a `run(...)` function that returns a dictionary of resul
    - E_x = −E_H/2
 7. **Check:** E must also equal 2ε − E_H/2 (+ E_nn). Adding the two orbital energies counts the electron–electron repulsion twice, and this removes one copy. The two routes agree to about 10⁻⁷ Ha.
 
-`KS_H2.py` imposes left–right symmetry on the density at every step. Without it, the charge sloshes from one nucleus to the other at large R and the loop never converges (see figure 8).
+`KS_H2.py` imposes left–right symmetry on the density at every step. Without it, the charge sloshes from one nucleus to the other at large R and the loop never converges.
 
 For two electrons in a singlet, Kohn–Sham with exact exchange and no correlation **is** restricted Hartree–Fock. So E_exact − E_KS is the exact correlation energy E_c.
 
-### `LDA_H_minus.py`, `LDA_H2.py` (to be implemented)
+### `LDA/`: `LDA_H_minus.py`, `LDA_He.py`, `LDA_H2.py` (to be implemented)
 
 The same loop with the **local density approximation** for exchange. Each point of the system is treated as a piece of a uniform electron gas with the local density:
 
@@ -110,21 +123,15 @@ J(k) is tabulated once and splined in ln n. The full v_H is used, because LDA do
 
 ### `compare.py`: outputs
 
-| Figure | Content |
-|---|---|
-| `fig1_densities.png` | n(x) for H⁻, He and H₂ (R = 3.5): exact vs Kohn–Sham (vs LDA) |
-| `fig2_density_errors.png` | n_method(x) − n_exact(x) |
-| `fig3_He_energy_breakdown.png` | T_s, E_ext, E_H and E_x for He |
-| `fig4_H2_dissociation.png` | H₂ energy curve E(R) for R = 1 to 10, with the exact R → ∞ limit |
-| `fig5_H2_errors_vs_R.png` | Exact correlation energy E_c(R) |
-| `fig6_H2_pair_probability.png` | Exact \|Ψ(x₁,x₂)\|² against the RHF product φ(x₁)²φ(x₂)² for H₂ |
-| `fig7_He_exchange_potentials.png` | Exchange potentials for He |
-| `fig8_scf_convergence.png` | SCF error against iteration; charge sloshing in stretched H₂ |
-| `fig9_mixing_study.png` | Iterations to converge against the mixing parameter α |
-| `fig10_grid_convergence.png` | He energy error against h² (h = 0.2, 0.1, 0.05) |
-| `fig11_Hminus_box.png` | H⁻ HOMO eigenvalue against box size: is the second electron bound? |
+`compare.py` makes two kinds of comparison and saves the plots in `results/`. It also prints the energy tables to the terminal.
 
-`results/results.md` contains every table.
+| Plot | Content |
+|---|---|
+| `results/energy_errors.png` | E_method − E_exact (mHa) for H⁻, He and H₂ (R = 3.5). For KS this is −E_c. |
+| `results/H2_energy_curve.png` | H₂ energy curve E(R) for R = 1 to 10 with the exact R → ∞ limit, and its error E_method − E_exact against R |
+| `results/densities.png` | Top row: n(x) for every method. Bottom row: n_method(x) − n_exact(x). One column each for H⁻, He and H₂ (R = 3.5). |
+
+LDA curves and bars are added automatically once all three LDA files define `run()`.
 
 ---
 
@@ -157,14 +164,16 @@ All numbers are from `compare.py` at h = 0.1, with box half-width L = 10 for the
 
 - The exact curve has its minimum between R ≈ 1.5 and 2 (bond length) and tends to 2 × E(H atom) = −1.3397 Ha as R → ∞.
 - RHF ends about 0.28 Ha too high at R = 10 and is still rising. This is **static correlation**. The restricted wavefunction φ(x₁)φ(x₂) puts the two electrons on the same atom 50% of the time at any R, so half of it is "H⁻ + H⁺" even when the atoms are far apart.
-- Figure 6 shows this directly. At R = 3.5 the probability that both electrons are on the same side of the molecule is **0.145** in the exact wavefunction and **0.485** in RHF.
+- A direct check: at R = 3.5 the probability that both electrons are on the same side of the molecule is **0.145** in the exact wavefunction and **0.485** in RHF.
 - Unrestricted HF (separate orbitals for each spin) would fix the energy at large R, at the price of breaking the spin symmetry.
 
 ### 4.3 Numerical checks
 
+These come from separate runs of the solvers (grid spacing, box size, mixing parameter and symmetrization varied by hand); `compare.py` no longer makes these plots.
+
 - **Grid convergence (He):** the error scales as h². Energies at h = 0.2, 0.1 and 0.05 extrapolate to −2.238258 (exact) and −2.224209 (KS). At h = 0.1 the error is about 0.3 mHa, far below every physical effect we discuss.
-- **Box size:** a box of L = 10 is converged to better than 1 mHa for He and H⁻ in KS (figure 11).
-- **SCF mixing:** iterations fall from about 110 at α = 0.1 to 6–8 at α ≈ 0.8–1.0 for He. For H₂ the optimum is near α ≈ 0.7–0.8 (figure 9).
+- **Box size:** a box of L = 10 is converged to better than 1 mHa for He and H⁻ in KS.
+- **SCF mixing:** iterations fall from about 110 at α = 0.1 to 6–8 at α ≈ 0.8–1.0 for He. For H₂ the optimum is near α ≈ 0.7–0.8.
 - **Charge sloshing:** for H₂ at R = 6 the unsymmetrized loop never converges (the error stays near 2). Imposing the mirror symmetry of the density, which the exact ground state has, makes it converge in 22 iterations.
 
 ### 4.4 LDA (to be implemented): target numbers
@@ -263,7 +272,7 @@ To be added later. The plan:
 
 ## 7. Corrections to earlier reference values
 
-The reference table in the early notebook listed RHF energies for stretched H₂ at R ≥ 4 (−1.1904, −1.0693 and −1.0224 Ha at R = 4, 6 and 10), plus an LDA-X column. Those came from an unconverged, sloshing SCF loop. The correct converged values are in section 4.2 and in `results/results.md`. The exact-solver column of that table was right.
+The reference table in the early notebook listed RHF energies for stretched H₂ at R ≥ 4 (−1.1904, −1.0693 and −1.0224 Ha at R = 4, 6 and 10), plus an LDA-X column. Those came from an unconverged, sloshing SCF loop. The correct converged values are in section 4.2. The exact-solver column of that table was right.
 
 ## 8. References
 

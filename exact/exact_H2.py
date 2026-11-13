@@ -6,6 +6,8 @@
 import numpy as np
 import scipy.sparse.linalg as spla
 import matplotlib.pyplot as plt
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")) # so common.py (one folder up) can be imported
 from common import make_grid, w, v_2atom, H_two_electron, A_SOFT
 
 

@@ -10,7 +10,7 @@ same LDA table and the same changes to the loop and the energy. Easiest start: c
 STEP 1 -- the LDA pieces
 ------------------------
 Use the same n e_x(n) table and v_x(n) as in LDA_H_minus.py. If you wrote them in common.py, import them;
-if you wrote them in LDA_H_minus.py, import them from there (from LDA_H_minus import nex_LDA, v_x_LDA).
+if you wrote them in LDA_H_minus.py, import them from there (from LDA.LDA_H_minus import nex_LDA, v_x_LDA).
 Build the table once; never inside the loop.
 
 

@@ -1,5 +1,5 @@
 """
-LDA_H_minus.py  --  TO DO: Kohn-Sham with LDA exchange for one nucleus (Z = 1 is H-, Z = 2 is He)
+LDA_H_minus.py  --  TO DO: Kohn-Sham with LDA exchange for one nucleus (default Z = 1, H-; He has its own file, LDA_He.py)
 
 WHAT THIS FILE SHOULD DO
 ------------------------

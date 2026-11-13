@@ -5,6 +5,8 @@
 import numpy as np
 import scipy as s
 import matplotlib.pyplot as plt
+import os, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")) # so common.py (one folder up) can be imported
 from common import make_grid, w_KS, v_ext_H2, T_1e, V_H, one_electron
 
 
