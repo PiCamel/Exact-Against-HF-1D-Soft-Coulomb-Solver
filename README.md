@@ -11,9 +11,9 @@ All quantities are in Hartree atomic units ($\hbar = m_e = e = 1$): energies in 
 
 ## Problem statement
 
-**In one line.** Benchmark restricted Hartree–Fock against exact solutions of the one-dimensional soft-Coulomb H⁻, He and H₂, and measure the correlation energy, including how it grows as H₂ is stretched.
+**Problem:** Benchmark restricted Hartree–Fock against exact solutions of the one-dimensional soft-Coulomb H⁻, He and H₂, and measure the correlation energy, including how it grows as H₂ is stretched.
 
-**Goal.** Solve a two-electron problem on a line exactly. Then solve the same problem with restricted Hartree–Fock, which for two electrons is the same as Kohn–Sham with exact exchange, and compare the energies and densities of the two methods. The difference between the two energies is exactly the correlation energy, so the error of the mean-field method can be measured directly.
+**Goal:** Solve a two-electron problem on a line exactly. Then solve the same problem with restricted Hartree–Fock, which for two electrons is the same as Kohn–Sham with exact exchange, and compare the energies and densities of the two methods. The difference between the two energies is exactly the correlation energy, so the error of the mean-field method can be measured directly.
 
 **Model.** Two electrons on a line, with every Coulomb interaction softened to $w(x) = 1/\sqrt{x^2 + 1}$. Section 1 gives the Hamiltonian and the three systems: H⁻, He and H₂ (whose total energy includes the nuclear repulsion $w(R)$).
 
