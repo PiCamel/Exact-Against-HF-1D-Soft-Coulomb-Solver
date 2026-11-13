@@ -1,5 +1,8 @@
 # Exact vs Kohn–Sham DFT for a 1D two-electron system
-### - By Siddharth Shivakumar (EP25BTECH11027), Kushal R (EP25BTECH11012), and Zulfqar Farooq (EP25BTECH11036)
+### - By
+### Siddharth Shivakumar (EP25BTECH11027), 
+### Kushal R (EP25BTECH11012), and 
+### Zulfqar Farooq (EP25BTECH11036)
 
 EP4210 Computational Physics project.
 
