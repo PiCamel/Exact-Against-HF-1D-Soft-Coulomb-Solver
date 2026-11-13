@@ -341,10 +341,14 @@ To be added later. The plan:
 
 ## 8. References
 
-- P. Hohenberg and W. Kohn, Phys. Rev. 136, B864 (1964).
-- W. Kohn and L. J. Sham, Phys. Rev. 140, A1133 (1965).
-- K. Capelle, *A Bird's-Eye View of Density-Functional Theory*, arXiv:cond-mat/0211443.
-- N. Helbig et al., Phys. Rev. A 83, 032503 (2011): 1D soft-Coulomb LDA.
-- L. O. Wagner, E. M. Stoudenmire, K. Burke and S. R. White, Phys. Chem. Chem. Phys. 14, 8581 (2012): reference calculations in one dimension.
-- A. J. Cohen, P. Mori-Sánchez and W. Yang, Science 321, 792 (2008): delocalization and static correlation error.
-- A. Szabo and N. S. Ostlund, *Modern Quantum Chemistry*, ch. 3 (Hartree–Fock).
+[1] W. Kohn, Electronic structure of matter — wave functions and density functionals, Nobel Lecture, 28
+January 1999. https://www.nobelprize.org/uploads/2018/06/kohn-lecture.pdf
+
+[2] K. Capelle, A bird’s-eye view of density-functional theory, arXiv:cond-mat/0211443. https://arxiv.org/
+pdf/cond-mat/0211443
+
+[3] N. M. Harrison, An introduction to density functional theory, lecture notes, Imperial College London and
+CLRC Daresbury Laboratory. https://www.imperial.ac.uk/media/imperial-college/research-cen
+tres-and-groups/computational-materials-science/teaching/DFT_NATO.pdf
+11
+
