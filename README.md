@@ -339,11 +339,7 @@ To be added later. The plan:
 - Only spin-restricted, closed-shell calculations are done. Unrestricted calculations for stretched H₂ are not included.
 - All results use finite boxes. This matters only for weakly bound systems such as H⁻, whose exact energy still changes in the fourth decimal place between $L = 10$ and $L = 14$.
 
-## 8. Corrections to earlier reference values
-
-The reference table in the early notebook listed RHF energies for stretched H₂ at $R \ge 4$ (−1.1904, −1.0693 and −1.0224 Ha at $R = 4$, $6$ and $10$), plus an LDA-X column. Those came from an unconverged, sloshing SCF loop. The correct converged values are in section 4.2. The exact-solver column of that table was right.
-
-## 9. References
+## 8. References
 
 - P. Hohenberg and W. Kohn, Phys. Rev. 136, B864 (1964).
 - W. Kohn and L. J. Sham, Phys. Rev. 140, A1133 (1965).
