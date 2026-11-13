@@ -10,7 +10,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from common import make_grid, w_KS, v_ext_H2, T_1e, V_H, one_electron
 
 
-def run(R=3.5, L=10.0, h=0.1, alpha=0.4, err_thres=1e-6, max_iter=1000, symmetrize=True):
+def run(R=3.5, L=10.0, h=0.1, err_thres=1e-6, max_iter=1000, symmetrize=True):
+  alpha = 0.4 # conservative convex combination for the density mixing
   R_H2 = R # internuclear distance (nuclei at +-R/2)
   L_H2 = L # use L = R/2 + 9 for large R, the box must grow with R
   h_H2 = h

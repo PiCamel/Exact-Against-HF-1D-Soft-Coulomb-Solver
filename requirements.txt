@@ -1,0 +1,7 @@
+# Python packages needed to run the code in this repository (Python 3.9 or newer).
+# Install them with:
+#     pip install -r requirements.txt
+# Tested with Python 3.14, NumPy 2.5.3, SciPy 1.18.1 and Matplotlib 3.11.2.
+numpy>=1.23
+scipy>=1.9
+matplotlib>=3.5

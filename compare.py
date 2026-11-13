@@ -1,10 +1,10 @@
 # Compares the exact and Kohn-Sham (exact exchange = RHF) solvers on H-, He and H2.
 # Every number quoted in the report is printed to the terminal by this file; the plots go to results/.
-#   1. Atoms and H2 at R = 3.5: energies, correlation energy, energy terms, the two energy routes, HOMO test
+#   1. Atoms and H2 at R = 3.5: energies, correlation energy, energy terms, the two energy routes, density peaks
 #   2. H2 energy curve E(R) and the pair probability
 #   3. Grid convergence of He with Richardson extrapolation (plus the one-electron H atom and He+)
 #   4. Box-size convergence
-#   5. SCF mixing and charge sloshing
+#   5. Charge sloshing in stretched H2
 #   Plots: energy_errors.png, H2_energy_curve.png, densities.png
 # Every method uses the same grid for a given system, so the results can be compared point by point.
 
@@ -24,7 +24,6 @@ APPROX = METHODS[1:] # the approximate (mean-field) methods
 SOLVERS = {"H-": {"exact": exact_H_minus, "KS": KS_H_minus},
            "He": {"exact": exact_He,      "KS": KS_He},
            "H2": {"exact": exact_H2,      "KS": KS_H2}}
-Z_ATOM = {"H-": 1, "He": 2} # nuclear charge of the atoms
 
 H = 0.1                 # grid spacing
 L = 10.0                # box half-width
@@ -32,7 +31,6 @@ R_MAIN = 3.5            # H2 bond length for the single-geometry comparison
 R_SWEEP = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0]
 H_GRID = [0.4, 0.2, 0.1, 0.05]                                 # grid study (He)
 L_BOX = [6.0, 8.0, 10.0, 12.0, 14.0]                           # box study
-ALPHAS = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]    # mixing study
 
 TITLE = {"H-": "H$^-$", "He": "He", "H2": f"H$_2$ (R = {R_MAIN})"}
 COL = {"exact": "#1f1f1f", "KS": "#534AB7"}
@@ -97,22 +95,13 @@ table("1b. KS energy terms (Ha) and checks",
       ["system", "T_s", "E_ext", "E_H", "E_x", "E_nn", "E (terms)", "E (2eps route)", "|difference|", "iterations",
        "int n (KS)", "int n (exact)"], rows)
 
-E_1e = {name: one_electron_energy(Z, L, H) for name, Z in Z_ATOM.items()} # H atom for H-, He+ for He
-rows = []
-for name in Z_ATOM:
-    I = E_1e[name] - res[name]["exact"]["E"]   # ionisation energy: one-electron system minus two-electron system
-    mEps = -res[name]["KS"]["eps"]
-    rows.append([name, f"{E_1e[name]:.5f}", f"{I:.4f}", f"{mEps:.4f}", f"{mEps - I:.4f}", f"{pct(mEps - I, I):.2f}"])
-table("1c. HOMO test: in exact KS, -eps_HOMO = I",
-      ["system", "E(one electron)", "I exact", "-eps KS", "difference", "delta (%)"], rows)
-
 rows = []
 for name in SOLVERS:
     r = res[name]
     i0 = len(r["exact"]["x"])//2 # x = 0 is the middle grid point
     rows.append([name, f"{r['exact']['n'].max():.3f}", f"{r['KS']['n'].max():.3f}",
                  f"{r['exact']['n'][i0]:.3f}", f"{r['KS']['n'][i0]:.3f}"])
-table("1d. Density peaks", ["system", "max n exact", "max n KS", "n(0) exact", "n(0) KS"], rows)
+table("1c. Density peaks", ["system", "max n exact", "max n KS", "n(0) exact", "n(0) KS"], rows)
 
 # =====================================================================
 # 2. H2 energy curve and the pair probability
@@ -174,8 +163,7 @@ table("3b. Extrapolated reference values, Richardson from h = 0.1 and 0.05 (Ha)"
       [["one-electron H atom", f"{E_H_ext:.5f}"], ["He+", f"{E_Hep_ext:.5f}"],
        ["He exact", f"{E_ex_ext:.5f}"], ["He KS (= RHF)", f"{E_ks_ext:.5f}"],
        ["E_c = E_exact - E_KS (extrapolated)", f"{E_ex_ext - E_ks_ext:.5f}"],
-       ["E_c at h = 0.1", f"{res['He']['exact']['E'] - res['He']['KS']['E']:.5f}"],
-       ["I = E(He+) - E(He) (extrapolated)", f"{E_Hep_ext - E_ex_ext:.5f}"]])
+       ["E_c at h = 0.1", f"{res['He']['exact']['E'] - res['He']['KS']['E']:.5f}"]])
 
 # =====================================================================
 # 4. Box-size convergence
@@ -185,21 +173,16 @@ for LL in L_BOX:
     he = exact_He.run(L=LL, h=H)["E"]
     hm, hm_ks = exact_H_minus.run(L=LL, h=H)["E"], KS_H_minus.run(L=LL, h=H)
     rows.append([f"{LL}", f"{he:.6f}", f"{hm:.6f}", f"{hm_ks['E']:.6f}", f"{hm_ks['E'] - hm:.5f}",
-                 f"{pct(hm_ks['E'] - hm, hm):.2f}", f"{-hm_ks['eps']:.4f}"])
+                 f"{pct(hm_ks['E'] - hm, hm):.2f}"])
 table(f"4. Box-size convergence at h = {H} (Ha)",
-      ["L", "He exact", "H- exact", "H- KS", "H- KS - exact", "H- delta (%)", "H- -eps KS"], rows)
+      ["L", "He exact", "H- exact", "H- KS", "H- KS - exact", "H- delta (%)"], rows)
 
 # =====================================================================
-# 5. SCF mixing and charge sloshing
+# 5. Charge sloshing in stretched H2 (density mixing alpha = 0.4 throughout)
 # =====================================================================
-mix = {"He": [KS_He.run(L=L, h=H, alpha=a)["iters"] for a in ALPHAS],
-       f"H2 (R={R_MAIN})": [KS_H2.run(R=R_MAIN, L=L, h=H, alpha=a)["iters"] for a in ALPHAS]}
-table("5a. SCF iterations to reach ||n_out - n_in|| < 1e-6 against the mixing parameter alpha",
-      ["alpha"] + [str(a) for a in ALPHAS], [[k] + [str(v) for v in vals] for k, vals in mix.items()])
-
 slosh = KS_H2.run(R=6.0, L=box_for(6.0), h=H, symmetrize=False, max_iter=300)
 fixed = KS_H2.run(R=6.0, L=box_for(6.0), h=H, symmetrize=True)
-print(f"\n5b. H2 at R = 6, alpha = 0.4: without symmetrizing: converged = {slosh['converged']} after "
+print(f"\n5. H2 at R = 6, alpha = 0.4: without symmetrizing: converged = {slosh['converged']} after "
       f"{slosh['iters']} iterations (last error {slosh['errs'][-1]:.2f}); "
       f"with symmetrizing: converged = {fixed['converged']} in {fixed['iters']} iterations\n")
 

@@ -11,7 +11,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from common import make_grid, v_ext, T_1e, V_H, one_electron
 
 
-def run(L=10.0, h=0.1, alpha=0.4, err_thres=1e-6, max_iter=1000):
+def run(L=10.0, h=0.1, err_thres=1e-6, max_iter=1000):
+  alpha = 0.4 # conservative convex combination for the density mixing
   Z = 2 # helium nucleus
   h_KS = h
   x_KS, N_KS = make_grid(L, h_KS)
@@ -28,9 +29,9 @@ def run(L=10.0, h=0.1, alpha=0.4, err_thres=1e-6, max_iter=1000):
   # v_H uses the density of both electrons, so it also counts each electron repelling itself.
   # Both electrons share one orbital, so exactly half of v_H is self-repulsion: v_x = -v_H/2, v_c = 0.
   eps = 0 # eigenvalue of kohn sham, NOT actual energy
-  errs = [] # convergence history, for the mixing parameter study
+  errs = [] # convergence history
 
-  for it in range(max_iter): # capped, so a diverging run (e.g. alpha too large) cannot loop forever
+  for it in range(max_iter): # capped, so a run that never settles cannot loop forever
     v_H = V_H(n,h_KS,x_KS)
     v_XC = -0.5*v_H
 

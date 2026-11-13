@@ -9,6 +9,37 @@ All quantities are in Hartree atomic units (ħ = mₑ = e = 1): energies in Hart
 
 ---
 
+## Problem statement
+
+**In one line.** Benchmark restricted Hartree–Fock against exact solutions of the one-dimensional soft-Coulomb H⁻, He and H₂, and measure the correlation energy, including how it grows as H₂ is stretched.
+
+**Goal.** Solve a two-electron problem on a line exactly. Then solve the same problem with restricted Hartree–Fock, which for two electrons is the same as Kohn–Sham with exact exchange, and compare the energies and densities of the two methods. The difference between the two energies is exactly the correlation energy, so the error of the mean-field method can be measured directly.
+
+**Model.** Two electrons on a line, with every Coulomb interaction softened to w(x) = 1/√(x² + 1). Section 1 gives the Hamiltonian and the three systems: H⁻, He and H₂ (whose total energy includes the nuclear repulsion w(R)).
+
+**Tasks.**
+
+1. **Grid tools.** A uniform grid on [−L, L] with spacing h and an odd number of points, the three-point finite-difference kinetic matrix, and a one-electron solver for the lowest eigenpair of T + diag(V).
+2. **Exact solver.** The sparse Hamiltonian T⊗I + I⊗T + diag(V) on the (x₁, x₂) grid, its lowest eigenpair by the Lanczos method, and the density n(x) from Ψ(x₁, x₂). For H⁻, He and H₂.
+3. **Hartree–Fock solver.** A self-consistent loop for one doubly occupied orbital: start from the bare-nucleus orbital, build v_eff = v_ext + ½v_H, mix the density with α = 0.4, and stop when the change in the density falls below 10⁻⁶. For H₂, keep the density symmetric about x = 0.
+4. **Energy.** E = T_s + E_ext + E_H + E_x term by term (plus E_nn = w(R) for H₂), checked against the eigenvalue route 2ε − ½E_H (plus E_nn).
+5. **Comparison and checks** (`compare.py`). Exact against Hartree–Fock energies and densities for H⁻, He and H₂ at R = 3.5; the H₂ energy curve from R = 1 to 10, and how often both electrons sit on the same side of the molecule; convergence in the grid spacing (with Richardson extrapolation) and in the box size; and the behaviour of the loop for stretched H₂.
+
+**Phases.** The original problem statement (`PS.md`) divides the work into six phases. This project carries out Phases 1–3. Phases 4–6 are future extensions that we have not started.
+
+| Phase | Content | Status |
+|---|---|---|
+| 1 | One-electron solver, three-point kinetic energy, Richardson extrapolation | Done |
+| 2 | Exact two-electron solver | Done |
+| 3 | Kohn–Sham with exact exchange (= restricted Hartree–Fock), giving the exact correlation energy | Done |
+| 4 | LDA exchange for the 1D soft-Coulomb electron gas | Future extension |
+| 5 | LDA correlation from a published parametrisation | Future extension |
+| 6 | Exact exchange–correlation potential, by inverting the exact density | Future extension |
+
+Besides the phases, the problem statement suggests stretched H₂ as an extension and asks for a grid-convergence study; both are part of this work. Its other suggested studies, such as scans over the nuclear charge Z and the softening parameter, were not done.
+
+---
+
 ## 1. The model
 
 Two electrons on a line. Every Coulomb interaction is softened so nothing diverges:
@@ -34,12 +65,51 @@ H = -½ ∂²/∂x₁² - ½ ∂²/∂x₂² + v_ext(x₁) + v_ext(x₂) + w(x�
 
 ## 2. How to run
 
-Requirements: Python 3 with `numpy`, `scipy` and `matplotlib`.
+You need **Python 3.9 or newer**. The code uses three packages, NumPy, SciPy and Matplotlib, which are listed in `requirements.txt`. If `python` is not found on your computer, use `python3` (macOS and Linux) or `py` (Windows) in the commands below.
+
+**Step 1. Get the code.** Clone the repository and move into its folder:
 
 ```bash
-python compare.py          # runs every solver, prints every number in the report, saves the plots in results/ (about 1.5 minutes)
-python KS/KS_H2.py         # any single analysis file runs on its own, prints its energies and plots n(x)
+git clone https://github.com/PiCamel/Exact-Against-HF-1D-Soft-Coulomb-Solver.git
 ```
+
+```bash
+cd Exact-Against-HF-1D-Soft-Coulomb-Solver
+```
+
+You can also download the ZIP from the GitHub page, unzip it and open a terminal in that folder.
+
+**Step 2 (optional). Make a virtual environment**, so the packages stay separate from the rest of your system:
+
+```bash
+python -m venv .venv
+```
+
+Then activate it with `source .venv/bin/activate` on macOS or Linux, or `.venv\Scripts\activate` on Windows. (On Debian or Ubuntu, `venv` may need installing first with `sudo apt install python3-venv`.)
+
+**Step 3. Install the packages:**
+
+```bash
+pip install -r requirements.txt
+```
+
+**Step 4. Run the full comparison** from the project folder:
+
+```bash
+python compare.py
+```
+
+This runs every solver, prints every number used in the report, and saves three plots in `results/`. It takes one to two minutes on a laptop; most of that time is the exact solver on the finest grids.
+
+**Step 5 (optional). Run a single solver.** Every file in `exact/` and `KS/` also runs on its own. It prints its energies and opens a plot of the density; close the plot window to finish.
+
+```bash
+python KS/KS_He.py
+```
+
+The other solvers run the same way: `python exact/exact_He.py`, `python exact/exact_H2.py`, `python KS/KS_H2.py`, and so on.
+
+**Rebuilding the report (optional).** `report/report.tex` reads its figures from `results/`, so run `compare.py` first. We built the PDF with Tectonic (`tectonic report.tex` inside `report/`); `pdflatex report.tex`, run twice, should also work.
 
 ---
 
@@ -53,6 +123,8 @@ exact/             exact two-electron solves (the benchmark)
 KS/                Kohn–Sham with exact exchange (= restricted Hartree–Fock)
     KS_H_minus.py      KS_He.py      KS_H2.py
 results/           plots written by compare.py
+report/            the project report (report.tex and report.pdf)
+requirements.txt   Python packages to install (pip install -r requirements.txt)
 ```
 
 Each method has one folder, and each folder has one file per system: H⁻ (Z = 1), He (Z = 2) and H₂.
@@ -67,6 +139,7 @@ Each method has one folder, and each folder has one file per system: H⁻ (Z = 1
 | `KS/KS_He.py` | The same for He (Z = 2). |
 | `KS/KS_H2.py` | Kohn–Sham with exact exchange (= RHF) for H₂. |
 | `compare.py` | Runs every solver and saves the energy and density comparison plots in `results/`. |
+| `requirements.txt` | The Python packages the code needs: NumPy, SciPy and Matplotlib. |
 
 Every analysis file has a `run(...)` function that returns a dictionary of results (energies, density, grid, convergence history), so `compare.py` can use it, plus a `__main__` block for running it alone. Each solver file adds the project folder to `sys.path` at the top, so it can import `common.py` whether you run it as `python KS/KS_He.py` from the project folder or from inside its own folder.
 
@@ -95,7 +168,7 @@ Every analysis file has a `run(...)` function that returns a dictionary of resul
 2. **Hartree potential:** v_H = h W n. It is built from both electrons, so it includes each electron repelling itself.
 3. **Exchange:** both electrons share one orbital, so exactly half of v_H is self-repulsion. Exact exchange removes it: v_x = −v_H/2, v_c = 0.
 4. **Solve** [T + v_ext + v_H + v_x] φ = ε φ for the lowest orbital, and set n_new = 2φ².
-5. **Mix** n ← α n_new + (1 − α) n (default α = 0.4) and repeat until |n_new − n| < 10⁻⁶. The loop is capped at `max_iter`.
+5. **Mix** n ← α n_new + (1 − α) n with α = 0.4 (fixed in every KS file) and repeat until |n_new − n| < 10⁻⁶. The loop is capped at `max_iter`.
 6. **Energy:** E = T_s + E_ext + E_H + E_x (+ E_nn for H₂), where
    - T_s = 2⟨φ|−½∂²|φ⟩
    - E_ext = ∫ n v_ext
@@ -109,7 +182,7 @@ For two electrons in a singlet, Kohn–Sham with exact exchange and no correlati
 
 ### `compare.py`: outputs
 
-`compare.py` saves the plots below in `results/` and prints every number quoted in the report to the terminal: energies, energy terms and the two energy routes, the HOMO test, density peaks, the H₂ energy curve (with E_nn and the electronic energy), the pair probability, grid convergence with Richardson extrapolation, box-size convergence, SCF mixing and the charge-sloshing test.
+`compare.py` saves the plots below in `results/` and prints every number quoted in the report to the terminal: energies, energy terms and the two energy routes, density peaks, the H₂ energy curve (with E_nn and the electronic energy), the pair probability, grid convergence with Richardson extrapolation, box-size convergence and the charge-sloshing test.
 
 | Plot | Content |
 |---|---|
@@ -125,14 +198,13 @@ All numbers are from `compare.py` at h = 0.1, with box half-width L = 10 for the
 
 ### 4.1 Energies (exact vs Kohn–Sham with exact exchange)
 
-| System | E exact | E KS (= RHF) | E_c = E_exact − E_KS | I exact | −ε KS |
-|---|---|---|---|---|---|
-| H⁻ | −0.73043 | −0.69182 | −0.03861 | 0.0606 | 0.0523 |
-| He | −2.23855 | −2.22450 | −0.01405 | 0.7549 | 0.7503 |
-| H₂ (R = 3.5) | −1.36357 | −1.26423 | −0.09933 | – | 0.5046 |
+| System | E exact | E KS (= RHF) | E_c = E_exact − E_KS |
+|---|---|---|---|
+| H⁻ | −0.73043 | −0.69182 | −0.03861 |
+| He | −2.23855 | −2.22450 | −0.01405 |
+| H₂ (R = 3.5) | −1.36357 | −1.26423 | −0.09933 |
 
 - E_KS > E_exact in every case, as the variational principle requires (same grid and same kinetic matrix in both codes).
-- I exact = E(one-electron system) − E(two-electron system) is the true ionization energy. In exact Kohn–Sham, −ε of the highest orbital equals I; Hartree–Fock's −ε (Koopmans' theorem) gets close.
 - Correlation is almost three times larger in H⁻ than in He: the loosely bound electrons have more room to avoid each other.
 
 ### 4.2 H₂: where mean field breaks
@@ -157,14 +229,13 @@ All numbers are from `compare.py` at h = 0.1, with box half-width L = 10 for the
 
 - **Grid convergence (He):** the error scales as h². Energies at h = 0.2, 0.1 and 0.05 extrapolate to −2.238258 (exact) and −2.224209 (KS). At h = 0.1 the error is about 0.3 mHa, far below every physical effect we discuss.
 - **Box size:** a box of L = 10 is converged to better than 1 mHa for He and H⁻ in KS.
-- **SCF mixing:** iterations fall from about 110 at α = 0.1 to 6–8 at α ≈ 0.8–1.0 for He. For H₂ the optimum is near α ≈ 0.7–0.8.
-- **Charge sloshing:** for H₂ at R = 6 the unsymmetrized loop never converges (the error stays near 2). Imposing the mirror symmetry of the density, which the exact ground state has, makes it converge in 22 iterations.
+- **Charge sloshing:** for H₂ at R = 6 the unsymmetrized loop never converges (the error is still about 2.7 after 300 iterations). Imposing the mirror symmetry of the density, which the exact ground state has, makes it converge in 22 iterations.
 
 ---
 
 ## 5. LDA: discussed, not implemented
 
-Exact exchange is only "local" here because there are two electrons (section 6.2 explains why). Real DFT codes instead approximate the whole exchange–correlation energy, and the simplest approximation is the **local density approximation (LDA)**. We decided not to implement it, but it is the natural next step, so this section sets out what it is and what it would show.
+Exact exchange is only "local" here because there are two electrons (section 6.2 explains why). Real DFT codes instead approximate the whole exchange–correlation energy, and the simplest approximation is the **local density approximation (LDA)**. It is not implemented in this project: it is Phase 4, a future extension. This section sets out what it is and what the problem statement expects it to show.
 
 ### 5.1 What LDA does
 
@@ -182,21 +253,13 @@ J(k) has no closed form, so it would be tabulated once on a log-spaced grid in n
 - **Why approximate:** a real atom is not a uniform gas. In particular, LDA does not cancel each electron's repulsion of itself exactly, as −v_H/2 does for two electrons. What is left over is the **self-interaction error**.
 - **Analogy:** estimating a hilly country's farmland value by treating every small patch as flat land at that patch's altitude. It works where the land changes slowly, and badly near cliffs.
 
-### 5.2 What LDA would show here
+### 5.2 What LDA would be expected to show
 
-Reference values for LDA exchange only (no LDA correlation), at h = 0.1 and L = 10. The He energy and exchange energy are also given in the problem statement. The H₂ and H⁻ values come from a reference run made while planning the project; **they are not produced by code in this repository**.
+The problem statement quotes reference values from its own calculation for 1D helium with LDA exchange only: a total energy of −2.158 Ha, and an exchange energy of −0.654 Ha against −0.724 Ha for exact exchange. We have not reproduced these numbers. If they hold:
 
-| System | E exact | E KS (exact exchange) | E KS-LDA exchange | −ε LDA |
-|---|---|---|---|---|
-| He | −2.23855 | −2.22450 | −2.158 | 0.467 |
-| H₂ (R = 3.5) | −1.36357 | −1.26423 | −1.238 | 0.351 |
-| H⁻ | −0.73043 | −0.69182 | −0.644 (box-dependent) | −0.129 (**unbound**) |
-
-- **Exchange error dominates in He.** LDA gives about 9% too little exchange (about −0.654 against −0.724 Ha). The total LDA error relative to exact exchange is about 0.066 Ha, roughly five times the entire correlation energy (0.014 Ha). So in 1D He, choosing an approximate exchange costs far more than ignoring correlation.
-- **The HOMO is too shallow.** The LDA potential dies off exponentially instead of like −1/|x|, so −ε ≈ 0.467 against the true ionization energy I = 0.755 for He. Exact exchange gets 0.750.
-- **LDA does not bind H⁻.** The highest orbital energy is positive, so the second electron is held only by the walls of the box, and its energy changes with the box size. This is a known failure of LDA for anions, caused by self-interaction.
-- **No local functional fixes static correlation.** For stretched H₂, LDA lies a little below RHF at large R but still far above the exact curve (about 0.22 Ha too high at R = 10). The exact exchange–correlation potential builds a peak at the bond midpoint that holds the electrons on separate atoms; a local functional cannot build it.
-- **Correlation:** the LDA correlation fit for this exact interaction (Helbig et al., 2011) would recover only about 0.014 Ha in He, much less than the exchange error, so it would not change these conclusions.
+- **Exchange error would dominate in He.** LDA would give about 10% too little exchange, and its total energy would lie about 0.066 Ha above the problem statement's Hartree–Fock value (−2.2242 Ha). That is several times the entire correlation energy we measure (0.014 Ha).
+- **No local functional fixes static correlation.** The problem statement expects LDA to fail for stretched H₂ in the same way as restricted Hartree–Fock. The exact exchange–correlation potential builds a peak at the bond midpoint that holds the electrons on separate atoms; a local functional cannot build it.
+- **Correlation.** The exact correlation energy of 1D He is only 0.014 Ha (measured here), much smaller than this exchange shortfall, so adding LDA correlation (Phase 5) is unlikely to change the conclusion.
 
 ---
 
@@ -252,11 +315,10 @@ These are textbook formal scalings; production codes reduce both HF and DFT furt
 - **Most of the saving comes from going to orbitals at all.** Mean field removes the exponential wall, and Hartree–Fock already gets that.
 - **Kohn–Sham with a local functional adds the rest.** It avoids HF's nonlocal exchange, keeps the Hamiltonian sparse, and includes an approximate correlation energy that Hartree–Fock lacks entirely.
 - **The price is accuracy.** Our two-electron results measure it exactly:
-  - small errors when the electrons are tightly bound (He: 14 mHa of missing correlation, measured here; about 66 mHa of LDA exchange error, from the reference values in section 5.2);
-  - qualitative failures where self-interaction matters (LDA leaves H⁻ unbound, section 5.2);
-  - failure where electrons need to avoid each other strongly (stretched H₂: about 0.28 Ha with RHF, measured here; about 0.22 Ha with LDA, section 5.2).
+  - small errors when the electrons are tightly bound (He: 14 mHa of missing correlation, measured here; about 66 mHa of LDA exchange error if the problem statement's reference values in section 5.2 hold);
+  - failure where electrons need to avoid each other strongly (stretched H₂: about 0.28 Ha with RHF, measured here; the problem statement expects LDA to fail in the same way).
 
-The fair summary is "approximate functionals fail", not "DFT fails": Kohn–Sham DFT with the exact functional would reproduce every exact number here.
+The fair summary is that approximate functionals fail: Kohn–Sham DFT with the exact functional would reproduce every exact number here.
 
 ### 6.4 Planned: measured time and space complexity
 
@@ -270,10 +332,10 @@ To be added later. The plan:
 
 ## 7. Limitations
 
-- The model is 1D with softened interactions. Absolute numbers don't transfer to real 3D atoms, but the qualitative failures (self-interaction, the shallow HOMO, static correlation) are the same ones seen in real DFT.
-- LDA is not implemented. The LDA numbers in section 5.2 are reference values, not output of this code. LDA correlation (the QMC-based fit of Helbig et al., 2011) was never part of the plan.
+- The model is 1D with softened interactions. Absolute numbers don't transfer to real 3D atoms, but the static-correlation failure of restricted Hartree–Fock in stretched H₂ is the same one seen in real molecules.
+- LDA exchange, LDA correlation and the exact exchange–correlation potential (Phases 4–6) are not implemented; they are future extensions. The LDA numbers in section 5.2 are the problem statement's reference values, not output of this code.
 - Only spin-restricted, closed-shell calculations are done. Unrestricted calculations for stretched H₂ are not included.
-- All results use finite boxes. This matters only for systems that are barely bound or unbound, such as H⁻ (and would matter a lot for H⁻ with LDA, which leaves it unbound).
+- All results use finite boxes. This matters only for weakly bound systems such as H⁻, whose exact energy still changes in the fourth decimal place between L = 10 and L = 14.
 
 ## 8. Corrections to earlier reference values
 
