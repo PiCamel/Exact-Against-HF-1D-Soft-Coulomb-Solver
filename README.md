@@ -1,4 +1,4 @@
-# Exact vs Kohn–Sham DFT for a 1D two-electron system - EP4210 Computational Physics project.
+# Exact vs Kohn–Sham DFT for a 1D two-electron system - EP4210 Computational Physics project
 
 ### - By Siddharth Shivakumar (EP25BTECH11027), Kushal R (EP25BTECH11012), and Zulfqar Farooq (EP25BTECH11036)
 We solve a two-electron problem **exactly** on a grid, then solve the same problem with **Kohn–Sham density functional theory (DFT)**, and measure where and why the approximate method goes wrong. Because the exact answer is computable here, every error in the approximate method can be measured directly instead of guessed.
