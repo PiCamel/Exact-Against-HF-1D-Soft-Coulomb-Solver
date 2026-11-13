@@ -100,4 +100,4 @@ obj/
 __pycache__/
 
 # tex
-.tex
+*.tex
