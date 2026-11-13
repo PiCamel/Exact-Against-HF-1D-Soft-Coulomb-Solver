@@ -1,8 +1,6 @@
-# Exact vs Kohn–Sham DFT for a 1D two-electron system
-##### - By Siddharth Shivakumar (EP25BTECH11027), Kushal R (EP25BTECH11012), and Zulfqar Farooq (EP25BTECH11036)
+# Exact vs Kohn–Sham DFT for a 1D two-electron system - EP4210 Computational Physics project.
 
-EP4210 Computational Physics project.
-
+### - By Siddharth Shivakumar (EP25BTECH11027), Kushal R (EP25BTECH11012), and Zulfqar Farooq (EP25BTECH11036)
 We solve a two-electron problem **exactly** on a grid, then solve the same problem with **Kohn–Sham density functional theory (DFT)**, and measure where and why the approximate method goes wrong. Because the exact answer is computable here, every error in the approximate method can be measured directly instead of guessed.
 
 The Kohn–Sham calculations use exact exchange, which for two electrons is the same as restricted Hartree–Fock. The local density approximation (LDA), the functional real DFT codes are built on, is discussed in section 5 but not implemented.
@@ -39,7 +37,7 @@ H = -½ ∂²/∂x₁² - ½ ∂²/∂x₂² + v_ext(x₁) + v_ext(x₂) + w(x�
 Requirements: Python 3 with `numpy`, `scipy` and `matplotlib`.
 
 ```bash
-python compare.py          # runs every solver and saves the comparison plots in results/ (about a minute)
+python compare.py          # runs every solver, prints every number in the report, saves the plots in results/ (about 1.5 minutes)
 python KS/KS_H2.py         # any single analysis file runs on its own, prints its energies and plots n(x)
 ```
 
@@ -49,7 +47,7 @@ python KS/KS_H2.py         # any single analysis file runs on its own, prints it
 
 ```
 common.py          shared building blocks, imported by every solver
-compare.py         runs every solver and makes the comparison figures
+compare.py         runs every solver, prints all results and makes the comparison figures
 exact/             exact two-electron solves (the benchmark)
     exact_H_minus.py   exact_He.py   exact_H2.py
 KS/                Kohn–Sham with exact exchange (= restricted Hartree–Fock)
@@ -80,6 +78,8 @@ Every analysis file has a `run(...)` function that returns a dictionary of resul
 - `H_two_electron(x, h, v)`: the two-electron Hamiltonian on the N × N grid, built as `kron(T, I) + kron(I, T) + diag(V)`. Each electron's kinetic energy acts along its own index, so this is the 5-point Laplacian in the (x₁, x₂) plane. It is sparse, with about 5 nonzeros per row.
 - `W_grid`, `V_H`: the Hartree potential v_H(x) = ∫ n(x′) w(x − x′) dx′ on the grid, `h * (W @ n)` with W_ij = w(xᵢ − xⱼ).
 - `one_electron(V, h, N)`: the lowest eigenpair of T + diag(V), normalized so that h Σ φ² = 1.
+- `richardson(E_h, E_2h)`: Richardson extrapolation E₀ ≈ E(h) + (E(h) − E(2h))/3 for an O(h²) method.
+- `convergence_order(E_4h, E_2h, E_h)`: the observed order of convergence p = log₂[(E₂ₕ − E₄ₕ)/(Eₕ − E₂ₕ)].
 
 ### `exact/`: `exact_H_minus.py`, `exact_He.py`, `exact_H2.py`
 
@@ -109,7 +109,7 @@ For two electrons in a singlet, Kohn–Sham with exact exchange and no correlati
 
 ### `compare.py`: outputs
 
-`compare.py` makes two kinds of comparison and saves the plots in `results/`. It also prints the energy tables to the terminal.
+`compare.py` saves the plots below in `results/` and prints every number quoted in the report to the terminal: energies, energy terms and the two energy routes, the HOMO test, density peaks, the H₂ energy curve (with E_nn and the electronic energy), the pair probability, grid convergence with Richardson extrapolation, box-size convergence, SCF mixing and the charge-sloshing test.
 
 | Plot | Content |
 |---|---|
@@ -153,7 +153,7 @@ All numbers are from `compare.py` at h = 0.1, with box half-width L = 10 for the
 
 ### 4.3 Numerical checks
 
-These come from separate runs of the solvers (grid spacing, box size, mixing parameter and symmetrization varied by hand); `compare.py` no longer makes these plots.
+`compare.py` prints all of these (sections 3–5 of its output).
 
 - **Grid convergence (He):** the error scales as h². Energies at h = 0.2, 0.1 and 0.05 extrapolate to −2.238258 (exact) and −2.224209 (KS). At h = 0.1 the error is about 0.3 mHa, far below every physical effect we discuss.
 - **Box size:** a box of L = 10 is converged to better than 1 mHa for He and H⁻ in KS.
@@ -168,7 +168,7 @@ Exact exchange is only "local" here because there are two electrons (section 6.2
 
 ### 5.1 What LDA does
 
-There is one system where the exchange energy can be worked out on paper: the **uniform electron gas**, where the density is the same everywhere. LDA treats each point of a real, lumpy system as a small piece of uniform gas with the local density n(x), and adds up the pieces. For the 1D soft-Coulomb interaction, putting the uniform-gas density matrix into the exchange integral gives (problem statement, M4):
+There is one system where the exchange energy can be worked out on paper: the **uniform electron gas**, where the density is the same everywhere. LDA treats each point of a real, lumpy system as a small piece of uniform gas with the local density n(x), and adds up the pieces. For the 1D soft-Coulomb interaction, putting the uniform-gas density matrix into the exchange integral gives (problem statement, Phase 4):
 
 ```
 n e_x(n) = -(n²/2) J(πn/2),   J(k) = ∫₀^∞ sin²t / (t² sqrt(t² + k²)) dt

@@ -31,12 +31,10 @@
 
 \begin{center}
   {\LARGE\bfseries Exact versus Kohn--Sham for a one-dimensional\\[2pt] two-electron atom\par}
-  \vspace{4pt}
-  {\large A pedagogical project report\par}
-  \vspace{16pt}
-  {\large Engineering Physics project\par}
   \vspace{14pt}
-  {\large 13 November 2026\par}
+  {\large Siddharth Shivakumar (EP25BTECH11027)\\[2pt]
+   Kushal R (EP25BTECH11012)\\[2pt]
+   Zulfqar Farooq (EP25BTECH11036)\par}
 \end{center}
 \vspace{10pt}
 
@@ -58,8 +56,8 @@ Coulomb interaction is softened:
 \end{equation}
 Atomic units are used throughout: lengths in bohr, energies in hartree (Ha), $\hbar=m_e=e=1$.
 
-\textbf{Required building blocks (milestones).}
-\begin{enumerate}[label=\textbf{M\arabic*.},leftmargin=*]
+\textbf{Phases of the project.}
+\begin{enumerate}[label=\textbf{Phase \arabic*.},leftmargin=*]
   \item One-electron solver: uniform grid on $[-L,L]$, three-point finite-difference kinetic energy,
         tridiagonal eigensolver, error $O(h^2)$, Richardson extrapolation.
   \item Exact two-electron solver: a sparse two-dimensional Hamiltonian on the $(x_1,x_2)$ grid and
@@ -75,27 +73,55 @@ Atomic units are used throughout: lengths in bohr, energies in hartree (Ha), $\h
 \textbf{Extension.} Stretched H$_2$: two soft nuclei at $\pm R/2$ with nuclear repulsion $w(R)$.
 \textbf{Parameter studies.} Grid convergence (mandatory), SCF mixing, a scan over $Z$, a scan over the
 softening parameter, and the HOMO test $-\varepsilon_\text{HOMO}=I$. The problem statement advises
-finishing M1--M3 first.
+finishing Phases 1--3 first.
 
-\textbf{What we completed.} M1; M2 for H$^-$, He and H$_2$; M3 for the same three systems; the
-stretched-H$_2$ extension (exact against restricted Hartree--Fock); and the studies of grid
-convergence, box size, SCF mixing and the HOMO test for Hartree--Fock.
+\textbf{What we completed.} Phase 1 (including Richardson extrapolation); Phase 2 for H$^-$, He and H$_2$;
+Phase 3 for the same three systems; the stretched-H$_2$ extension (exact against restricted
+Hartree--Fock); and the studies of grid convergence, box size, SCF mixing and the HOMO test for
+Hartree--Fock.
 
-\textbf{What we did not complete.} M4 is derived on paper in Section~\ref{sec:lda} but was
-\emph{not implemented}, so this report contains no LDA numbers of our own. M5 (LDA correlation),
-M6 (the exact exchange--correlation potential), the scans over $Z$ and over the softening parameter,
-the triplet state, and measured time and memory scaling were not done either.
+\textbf{What we did not complete.} Phase 4 was derived on paper but \emph{not implemented}, so this
+report contains no LDA numbers of our own. Phase 5 (LDA correlation), Phase 6 (the exact
+exchange--correlation potential), the scans over $Z$ and over the softening parameter, the triplet
+state, and measured time and memory scaling were not done either. Section~\ref{sec:future} sets out
+how they would be done.
 
 So the project compares the exact solution with Hartree--Fock. That measures the exact correlation
 energy, and with it the full error of Hartree--Fock, but it does \emph{not} yet measure the error of
-an approximate density functional. Where this report discusses LDA, it says so explicitly and quotes
-the problem statement's reference values rather than our own.
+an approximate density functional.
 
-\textbf{The code.} \texttt{common.py} holds the shared pieces (grid, interaction, kinetic matrix,
-two-electron Hamiltonian, Hartree potential). The folder \texttt{exact/} has one exact solver per
-system (\texttt{exact\_H\_minus.py}, \texttt{exact\_He.py}, \texttt{exact\_H2.py}), and \texttt{KS/}
-has the matching Kohn--Sham (= Hartree--Fock) solvers. \texttt{compare.py} runs both on every system
-and saves the energy and density comparison plots used in Section~\ref{sec:results}.
+\subsection{Code and repository}
+
+All code is in the repository \url{https://github.com/PiCamel/Exact-Against-HF-1D-Soft-Coulomb-Solver}. It is organised by method, with one file per system (Table~\ref{tab:repo}).
+
+\begin{table}[!htbp]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Path & Contents\\
+\midrule
+\texttt{common.py} & Shared building blocks: grid, soft-Coulomb $w$, external potentials, kinetic matrix,\\
+                   & two-electron Hamiltonian, Hartree potential, one-electron solver, Richardson\\
+                   & extrapolation and the observed order of convergence\\
+\texttt{exact/}    & Exact solvers (Phase 2): \texttt{exact\_H\_minus.py}, \texttt{exact\_He.py}, \texttt{exact\_H2.py}\\
+\texttt{KS/}       & Kohn--Sham with exact exchange $=$ Hartree--Fock (Phase 3): \texttt{KS\_H\_minus.py},\\
+                   & \texttt{KS\_He.py}, \texttt{KS\_H2.py}\\
+\texttt{compare.py} & Runs every solver, prints every number quoted in Section~\ref{sec:results} and\\
+                    & saves the three plots\\
+\texttt{results/}  & The plots: \texttt{energy\_errors.png}, \texttt{H2\_energy\_curve.png}, \texttt{densities.png}\\
+\texttt{report/}   & This report (\texttt{report.tex}, \texttt{report.pdf})\\
+\texttt{README.md}, \texttt{PS.md} & Project description and the original problem statement\\
+\bottomrule
+\end{tabular}
+\caption{Layout of the repository.}
+\label{tab:repo}
+\end{table}
+
+Every solver file has a \texttt{run(\dots)} function that returns its results as a dictionary
+(energy, density, grid and, for Kohn--Sham, the energy terms and convergence history), and can also
+be run on its own (\texttt{python KS/KS\_He.py}). Running \texttt{python compare.py} reproduces
+everything in Section~\ref{sec:results} in about a minute and a half.
 
 % =====================================================================
 \section{Why density functional theory exists}
@@ -120,7 +146,7 @@ unknown term that is approximated~\cite{kohn,capelle}. Our toy model keeps the e
 so the cost of this trade can be measured exactly.
 
 % =====================================================================
-\section{The exact solution on a grid (M1, M2)}
+\section{The exact solution on a grid (Phases 1 and 2)}
 
 \subsection{Symmetry, spin and the density}
 
@@ -132,7 +158,7 @@ symmetric $\Psi(x_1,x_2)$. The density counts either electron:
   n(x)=2\int|\Psi(x,x')|^2\dd x',\qquad \int n(x)\dd x=2.
 \end{equation}
 
-\subsection{Calculus becomes linear algebra}
+\subsection{Finite difference method}
 
 Store a function only at grid points $x_i=-L+ih$. An integral becomes a sum, $\int f\dd x\to h\sum_i f_i$.
 A second derivative becomes a difference of neighbours. Adding the Taylor expansions of $\psi(x\pm h)$
@@ -146,12 +172,8 @@ is a diagonal matrix, and the Schr\"odinger equation becomes a matrix eigenvalue
   (T+V)\boldsymbol\psi=E\boldsymbol\psi.
 \end{equation}
 The ground state is the lowest eigenvector. This is guaranteed by the variational principle: for
-any trial vector, $\langle\psi|\hat H|\psi\rangle/\langle\psi|\psi\rangle\ge E_0$.
-
-\begin{plainwords}
-A grid is a photo of a function at finite resolution. Halving $h$ doubles the pixels, so the picture
-is sharper and there are more numbers to store.
-\end{plainwords}
+any trial vector, $\langle\psi|\hat H|\psi\rangle/\langle\psi|\psi\rangle\ge E_0$. In the code, $T$ is \texttt{T\_1e} and
+the one-electron solver is \texttt{one\_electron}, both in \texttt{common.py}.
 
 \subsection{Two electrons: the Kronecker product}
 
@@ -172,7 +194,10 @@ If the error is $c\,h^2$, then $E(h)=E_0+ch^2$ and $E(2h)=E_0+4ch^2$. Subtractin
 \begin{equation}
   E_0\approx E(h)+\frac{E(h)-E(2h)}{3}.
 \end{equation}
-Check: $E(h)-E(2h)=-3ch^2$, so the correction $-ch^2$ cancels the error in $E(h)$.
+Check: $E(h)-E(2h)=-3ch^2$, so the correction $-ch^2$ cancels the error in $E(h)$. With three spacings
+$h,2h,4h$ the observed order of convergence is $p=\log_2\!\big[(E_{2h}-E_{4h})/(E_h-E_{2h})\big]$, which should be 2.
+Both formulas are in \texttt{common.py} (\texttt{richardson}, \texttt{convergence\_order}) and are used by
+\texttt{compare.py}.
 
 \begin{insight}
 \textbf{Always check $h\sum_i n_i=2$ and the $h^2$ scaling.} In this project the integral of $n$ came out
@@ -182,7 +207,30 @@ integral is the most common silent bug.
 \end{insight}
 
 % =====================================================================
-\section{Hartree--Fock, self-interaction and the SCF loop (M3)}
+\section{Density functional theory: Hohenberg--Kohn and Kohn--Sham}\label{sec:dft}
+
+\textbf{Hohenberg--Kohn.} The ground-state density determines the external potential and therefore
+everything~\cite{kohn}. The energy is a functional of the density, $E[n]=F[n]+\int n\,v_\text{ext}\dd x\ge E_0$, minimised
+by the true density. The catch is that nobody knows the kinetic-energy part of $F[n]$ exactly.
+
+\textbf{Kohn--Sham.} Replace the interacting electrons by non-interacting ones that have the \emph{same
+density}. Their kinetic energy $T_s$ is easy to compute from orbitals. Everything else is gathered in
+one unknown, the exchange--correlation energy~\cite{kohn,capelle,harrison}:
+\begin{equation}
+  E[n]=T_s[n]+\int n\,v_\text{ext}\dd x+E_H[n]+E_{xc}[n],\qquad
+  \Big[-\tfrac12\partial_x^2+v_\text{ext}+v_H+v_{xc}\Big]\varphi_i=\varepsilon_i\varphi_i,
+\end{equation}
+with $v_{xc}=\delta E_{xc}/\delta n$ and $n=2\sum_\text{occ}|\varphi_i|^2$. If $E_{xc}$ were exact, DFT would be exact. All practical
+error comes from approximating it. Section~\ref{sec:equiv} shows which $E_{xc}$ our calculation uses.
+
+\begin{plainwords}
+The Kohn--Sham electrons are stunt doubles. They are not the real actors (they do not
+interact), but they are dressed so that the audience (the density) cannot tell the difference.
+All the acting the doubles cannot do is handled by $v_{xc}$.
+\end{plainwords}
+
+% =====================================================================
+\section{Hartree--Fock, self-interaction and the SCF loop (Phase 3)}
 
 \subsection{One orbital for both electrons}
 
@@ -190,25 +238,38 @@ The cheapest wavefunction puts both electrons (opposite spins) in the same posit
 $\Psi(x_1,x_2)=\varphi(x_1)\varphi(x_2)$, with density $n=2\varphi^2$. The Hartree potential is the electrostatic potential
 of the whole electron cloud:
 \begin{equation}
-  v_H(x)=\int n(x')\,w(x-x')\dd x',\qquad E_H=\tfrac12\int n\,v_H\dd x.
+  v_H(x)=\int n(x')\,w(x-x')\dd x',\qquad E_H=\tfrac12\int n\,v_H\dd x=\tfrac12\iint n(x)\,n(x')\,w(x-x')\dd x\dd x'.
 \end{equation}
 On the grid this is a matrix--vector product, $v_H=h\,W n$ with $W_{ij}=w(x_i-x_j)$. The factor $h$ is
 the integration weight.
 
-\subsection{The famous one half}
+\textbf{Where the $\tfrac12$ in $E_H$ comes from.} The density $n$ holds the charge of both electrons, and
+$\int n\,v_H\dd x$ adds up the repulsion between every piece of that cloud and every other piece. The double
+integral visits each pair of points twice, once as $(x,x')$ and once as $(x',x)$, so without the $\tfrac12$ every
+repulsion would be counted twice. The $\tfrac12$ removes this double counting. It is a different $\tfrac12$ from the
+one in Section~\ref{sec:equiv}: this one appears for any number of electrons, while that one is special to two.
 
-The cloud $n$ contains \emph{both} electrons, so each electron also feels its own cloud. That self-repulsion
-is unphysical. For two electrons in one orbital each electron is exactly half the cloud, so exact
-exchange removes exactly half of the Hartree energy:
+\subsection{Equivalence of HF and KS for this problem}\label{sec:equiv}
+
+The cloud $n$ contains \emph{both} electrons, so $v_H$ also makes each electron repel its own charge. That
+self-repulsion is unphysical. For two electrons in one orbital each electron is exactly half the cloud,
+so exact exchange removes exactly half of the Hartree energy and potential:
 \begin{equation}
   E_x=-\tfrac12E_H,\qquad v_x=-\tfrac12v_H,\qquad v_\text{eff}=v_\text{ext}+\tfrac12v_H.
 \end{equation}
 
-\begin{plainwords}
-$v_H$ is the noise level of a room measured with you in it. You never hear your own voice as
-noise, so the real noise is everyone else. With two people in the room, that is exactly half the
-total.
-\end{plainwords}
+This is why Hartree--Fock and Kohn--Sham give \emph{the same} equation here.
+\begin{itemize}
+  \item \textbf{Hartree--Fock} minimises the energy of the product $\varphi(x_1)\varphi(x_2)$. Its orbital equation is
+        $\big[-\tfrac12\partial_x^2+v_\text{ext}+2J-K\big]\varphi=\varepsilon\varphi$, where $J$ multiplies by $\tfrac12v_H$ and the exchange
+        operator $K$ acting on the single orbital gives back $J\varphi$. So $2J-K\to J=\tfrac12v_H$.
+  \item \textbf{Kohn--Sham} with the exact-exchange functional $E_{xc}=E_x=-\tfrac12E_H$ and no correlation
+        ($E_c=0$) has $v_{xc}=-\tfrac12v_H$, so $v_\text{ext}+v_H+v_{xc}=v_\text{ext}+\tfrac12v_H$.
+\end{itemize}
+Both give $\big[-\tfrac12\partial_x^2+v_\text{ext}+\tfrac12v_H\big]\varphi=\varepsilon\varphi$, so the orbital, density and energy are identical.
+Our \texttt{KS/} solvers are therefore Hartree--Fock solvers, and this report uses ``HF'', ``RHF'' and ``KS with
+exact exchange'' for the same calculation. For more than two electrons the two methods separate: Hartree--Fock
+exchange becomes a non-local operator, while Kohn--Sham needs one local potential shared by all orbitals.
 
 \subsection{The energy, term by term}
 
@@ -220,17 +281,34 @@ For the state ``both electrons in $\varphi$'':
    +\underbrace{\big(-\tfrac12E_H\big)}_{E_x}.
 \end{equation}
 $T_s$ is the cost of confinement (always positive), $E_\text{ext}$ is the attraction to the nucleus, $E_H$ the cloud
-repelling itself (the $\tfrac12$ stops each pair being counted twice), and $E_x$ removes the self-repulsion.
-For H$_2$ the nuclear repulsion $E_{nn}=w(R)$ is added. The correlation energy is what a product state
+repelling itself, and $E_x$ removes the self-repulsion. The correlation energy is what a product state
 cannot capture: electrons avoid each other, so the true $\Psi$ is not a product. It comes for free here:
 \begin{equation}
   E_c=E_\text{exact}-E_\text{HF}\le0.
 \end{equation}
 
+\textbf{The nuclear repulsion $E_{nn}$.} For H$_2$ both of our solvers add $E_{nn}=w(R)$: \texttt{exact\_H2.py}
+returns \texttt{E[0] + E\_nn} (and keeps the electronic energy separately as \texttt{E\_elec}), and \texttt{KS\_H2.py}
+adds \texttt{E\_nn\_H2} to its term-by-term sum and to the eigenvalue check. What changes with it is the
+\emph{meaning} of the number:
+\begin{itemize}
+  \item \textbf{Without $E_{nn}$} the result is the \emph{electronic energy}: the energy of the two electrons moving
+        in the field of two fixed nuclei. The nuclei are clamped (Born--Oppenheimer), so $w(R)$ is just a
+        constant. Adding a constant to a Hamiltonian shifts every eigenvalue and leaves every eigenvector
+        unchanged, so $\Psi$, $n(x)$ and $E_c$ do not depend on it, as long as it is treated the same way in
+        both methods.
+  \item \textbf{With $E_{nn}$} the result is the \emph{total energy of the whole molecule} at that geometry: electrons
+        plus nuclei. This is the number that can be compared between different $R$. The electronic energy alone
+        keeps falling as the nuclei approach (from $-1.439$\Ha{} at $R=10$ to $-2.120$\Ha{} at $R=1$, Table~\ref{tab:h2}),
+        so on its own it would predict no bond. The nuclear repulsion grows faster at short range, and only the
+        sum has a minimum (the bond length) and tends to two separate hydrogen atoms as $R\to\infty$.
+\end{itemize}
+For the atoms there is only one nucleus, so $E_{nn}=0$ and the electronic energy is the total energy.
+
 \textbf{Why not add the eigenvalues?} Doubling the orbital equation gives $2\varepsilon=T_s+E_\text{ext}+E_H$, so
-$E=2\varepsilon-\tfrac12E_H$ and \emph{not} $2\varepsilon$. In general Kohn--Sham, $E=\sum_i\varepsilon_i-E_H-\int n\,v_{xc}\dd x+E_{xc}$.
-Our code computes $E$ both term by term and from this shortcut: two independent routes that must
-agree, and do, to about $10^{-7}$\Ha{} (Table~\ref{tab:terms}).
+$E=2\varepsilon-\tfrac12E_H$ (plus $E_{nn}$ for H$_2$) and \emph{not} $2\varepsilon$. In general Kohn--Sham,
+$E=\sum_i\varepsilon_i-E_H-\int n\,v_{xc}\dd x+E_{xc}$. Our code computes $E$ both term by term and from this
+shortcut: two independent routes that must agree, and do, to better than $10^{-7}$\Ha{} (Table~\ref{tab:terms}).
 
 \begin{plainwords}
 Each $\varepsilon$ already contains that electron's repulsion from the other one. Adding both counts
@@ -278,7 +356,7 @@ say) needs $\alpha<0.5$. Small $\alpha$ is safe but slow.
   \draw[ar] (mix.west) -| node[pos=0.75,left,font=\small]{next iteration} (build.south);
 \end{tikzpicture}
 \caption{The self-consistent field loop. In this project $v_{xc}=-\tfrac12v_H$ (exact exchange), which makes
-it the Hartree--Fock loop; an LDA calculation would change only the $v_{xc}$ line.}
+it the Hartree--Fock loop.}
 \label{fig:scf}
 \end{figure}
 
@@ -286,113 +364,16 @@ it the Hartree--Fock loop; an LDA calculation would change only the $v_{xc}$ lin
 \textbf{Mixing matters only when the problem is hard.} For helium, plain iteration ($\alpha=1$)
 converges in 8 iterations and the fastest mixing was $\alpha=0.9$ (6 iterations, Table~\ref{tab:mix}). For
 stretched H$_2$ the same loop fails: at $R=6$, without help, the charge sloshes from one nucleus to the
-other and the error is still about 2.7 after 300 iterations. Forcing the density to be symmetric under
+other and the error is still 2.67 after 300 iterations. Forcing the density to be symmetric under
 $x\to-x$ at every step (the exact ground state has this symmetry) makes it converge in 22 iterations at
 $\alpha=0.4$. Every H$_2$ result in this report uses the symmetrised loop.
 \end{insight}
 
 % =====================================================================
-\section{Kohn--Sham DFT and the LDA (theory only)}\label{sec:lda}
-
-This section explains the theory behind the next step of the project. We derived the LDA exchange
-(M4) but did not implement it, and we did not carry out the inversion (M6). Nothing in this section
-is backed by our own calculations.
-
-\subsection{Hohenberg--Kohn and the Kohn--Sham trick}
-
-\textbf{Hohenberg--Kohn.} The ground-state density determines the external potential and therefore
-everything~\cite{kohn}. The energy is a functional of the density, $E[n]=F[n]+\int n\,v_\text{ext}\dd x\ge E_0$, minimised
-by the true density. The catch is that nobody knows the kinetic-energy part of $F[n]$ exactly.
-
-\textbf{Kohn--Sham.} Replace the interacting electrons by non-interacting ones that have the \emph{same
-density}. Their kinetic energy $T_s$ is easy to compute from orbitals. Everything else is gathered in
-one unknown, the exchange--correlation energy~\cite{kohn,capelle,harrison}:
-\begin{equation}
-  E[n]=T_s[n]+\int n\,v_\text{ext}\dd x+E_H[n]+E_{xc}[n],\qquad
-  \Big[-\tfrac12\partial_x^2+v_\text{ext}+v_H+v_{xc}\Big]\varphi_i=\varepsilon_i\varphi_i,
-\end{equation}
-with $v_{xc}=\delta E_{xc}/\delta n$ and $n=2\sum_\text{occ}|\varphi_i|^2$. If $E_{xc}$ were exact, DFT would be exact. All practical
-error comes from approximating it. Our Hartree--Fock calculation is the special case $E_{xc}=E_x=-\tfrac12E_H$,
-$E_c=0$, which is exact exchange for two electrons.
-
-\begin{plainwords}
-The Kohn--Sham electrons are stunt doubles. They are not the real actors (they do not
-interact), but they are dressed so that the audience (the density) cannot tell the difference.
-All the acting the doubles cannot do is handled by $v_{xc}$.
-\end{plainwords}
-
-\subsection{Deriving the LDA exchange for the 1D soft-Coulomb gas (M4)}
-
-LDA treats every small slice of the system as a piece of uniform gas at the local
-density~\cite{capelle,harrison}. So we need the exchange energy of a uniform 1D gas with our softened interaction.
-
-\textbf{Step 1: the Fermi wavevector.} Free electrons fill plane waves $e^{ikx}$ up to $|k|=k_F$. Per
-spin, the number of states per unit length is $2k_F/(2\pi)=k_F/\pi$. Setting this equal to $n/2$ gives
-$k_F=\pi n/2$.
-
-\textbf{Step 2: the density matrix.} Adding the plane waves,
-\begin{equation}
-  \gamma(x)=\frac1{2\pi}\int_{-k_F}^{k_F}e^{ikx}\dd k=\frac{k_F}{\pi}\,\frac{\sin(k_Fx)}{k_Fx}.
-\end{equation}
-It measures how much an electron at one point is correlated with a point a distance $x$ away.
-
-\textbf{Step 3: the exchange energy per unit length.} Exchange is $-\tfrac12$ times the interaction
-weighted by $\gamma^2$, summed over the two spins:
-\begin{equation}
-  n\,e_x(n)=-\int_{-\infty}^{\infty}w(x)\,\gamma(x)^2\dd x.
-\end{equation}
-Substitute $t=k_Fx$. Then $w=k_F/\sqrt{t^2+k_F^2}$ and
-\begin{equation}
-  n\,e_x(n)=-\frac{2k_F^2}{\pi^2}J(k_F)=-\frac{n^2}{2}J\!\left(\frac{\pi n}{2}\right),\qquad
-  J(k)=\int_0^\infty\frac{\sin^2t}{t^2\sqrt{t^2+k^2}}\dd t.
-\end{equation}
-
-\textbf{Step 4: how it would be used (not implemented).} $J$ has no closed form. It would be
-integrated numerically, tabulated on log-spaced densities and fitted with a cubic spline in $\ln n$.
-The energy and potential are then
-\begin{equation}
-  E_x^\text{LDA}[n]=\int n\,e_x(n)\dd x,\qquad v_x(n)=\frac{\dd\,[\,n\,e_x(n)\,]}{\dd n}.
-\end{equation}
-In the SCF loop, LDA would use $v_\text{eff}=v_\text{ext}+v_H+v_x(n)$ (the full $v_H$, plus $v_x$), whereas exact exchange
-uses $v_\text{ext}+\tfrac12v_H$. Only one line of our Kohn--Sham code would change.
-
-\textbf{Check.} At high density $J\approx\pi/(2k_F)$, because $1/\sqrt{t^2+k^2}$ is nearly constant where $\sin^2t/t^2$ lives
-and $\int_0^\infty\sin^2t/t^2\dd t=\pi/2$. This gives $e_x\to-\tfrac12$, which is the check the problem
-statement asks for.
-
-\begin{plainwords}
-LDA is like valuing hilly farmland by treating every small patch as flat land at that patch's
-altitude. It is fine where the land changes slowly and wrong near cliffs. Atoms are full of
-cliffs, because the density drops quickly.
-\end{plainwords}
-
-\textbf{What LDA would be expected to show.} The problem statement's own reference calculation gives,
-for 1D helium, an exchange-only LDA energy of $-2.158$\Ha{} and an LDA exchange energy of $-0.654$\Ha{}
-against the exact-exchange $-0.724$\Ha. If that holds, LDA misses about 10\% of the exchange energy, an
-error several times larger than the whole correlation energy we measure in Section~\ref{sec:results}
-($-0.014$\Ha). We have not reproduced these numbers; they are the first thing an LDA implementation
-should check.
-
-\subsection{The exact exchange--correlation potential by inversion (M6, not done)}
-
-For two electrons with opposite spins, $n=2\varphi^2$ means the single Kohn--Sham orbital is exactly
-$\varphi=\sqrt{n/2}$. No iteration is needed. Putting this $\varphi$ into the Kohn--Sham equation and solving for
-the potential gives
-\begin{equation}
-  v_s(x)=\varepsilon+\frac{\varphi''(x)}{2\varphi(x)},\qquad v_{xc}=v_s-v_\text{ext}-v_H,\qquad \varepsilon=-I.
-\end{equation}
-The constant is fixed by the theorem that the exact highest orbital energy equals minus the
-ionisation energy. Dividing by tiny numbers in the tails amplifies noise, so the result should be
-shown only where $n>10^{-8}$. Far from the atom the escaping electron sees the nucleus ($+Z$) screened
-by the other electron ($-1$), so the exact $v_{xc}$ must tend to $-w(x)$, which falls as $1/|x|$. LDA gives
-something proportional to $n$, which dies exponentially. Our exact solver already produces the density
-this would need; the inversion itself was not carried out.
-
-% =====================================================================
 \section{Stretched H\texorpdfstring{$_2$}{2}: static correlation}
 
 Place two nuclei ($Z=1$ each) at $\pm R/2$ and add the nuclear repulsion $w(R)$ to every energy. As
-$R\to\infty$ the exact energy tends to two separate hydrogen atoms, $2\times(-0.6699)=-1.3397$\Ha.
+$R\to\infty$ the exact energy tends to two separate hydrogen atoms, $2\times(-0.66986)=-1.33972$\Ha{} on our grid.
 Restricted Hartree--Fock keeps one orbital for both electrons. By symmetry it is $\varphi=(\chi_A+\chi_B)/\sqrt2$,
 a mix of an orbital on each nucleus, and the product is
 \begin{equation}
@@ -415,16 +396,16 @@ of no longer being a proper spin singlet. We did not run it.
 % =====================================================================
 \section{Results}\label{sec:results}
 
-Unless stated otherwise, every number below comes from the solvers in \texttt{exact/} and \texttt{KS/}
-at $h=0.1$ and box half-width $L=10$, and every figure is an output of \texttt{compare.py}. The grid,
-box and mixing studies call the same solvers' \texttt{run()} functions with other values of $h$, $L$ and
-$\alpha$. ``RHF'' and ``KS with exact exchange'' are the same calculation here.
+Every number in this section is printed by \texttt{compare.py}, and every figure is one of its plots. The
+label in brackets in each caption (for example ``output 1a'') names the block of its terminal output
+that the table comes from. Unless stated otherwise the grid spacing is $h=0.1$ and the box half-width is
+$L=10$. ``RHF'' and ``KS with exact exchange'' are the same calculation (Section~\ref{sec:equiv}).
 
 \subsection{Helium and the hydrogen anion}
 
-Table~\ref{tab:atoms} compares total energies. After Richardson extrapolation, our solvers reproduce
-the problem statement's reference numbers to four decimals: one-electron H $=-0.6698$, He$^+=-1.4834$,
-exact He $=-2.2383$, RHF $=-2.2242$, $E_c=-0.0140$ and $I=0.7548$\Ha.
+Table~\ref{tab:atoms} compares total energies. After Richardson extrapolation our solvers reproduce the
+problem statement's reference numbers to four decimals (output 3b): one-electron H $=-0.6698$,
+He$^+=-1.4834$, exact He $=-2.2383$, RHF $=-2.2242$, $E_c=-0.0140$ and $I=0.7548$\Ha.
 
 \begin{table}[H]
 \centering
@@ -438,7 +419,7 @@ H$^-$ ($Z=1$), $h=0.1$, $L=10$   & $-0.73043$ & $-0.69182$ & $0.03861$ & $5.29$\
 H$^-$ ($Z=1$), $h=0.1$, $L=14$   & $-0.73079$ & $-0.69208$ & $0.03871$ & $5.30$\\
 \bottomrule
 \end{tabular}
-\caption{Total ground-state energies in hartree. Extrapolation uses $h=0.1$ and $0.05$.
+\caption{Total ground-state energies in hartree (outputs 1a, 3b and 4). Extrapolation uses $h=0.1$ and $0.05$.
 $\Delta=E_\text{approx}-E_\text{exact}$ and $\delta=100|\Delta|/|E_\text{exact}|$. For Hartree--Fock, $\Delta$ is exactly minus the
 correlation energy.}
 \label{tab:atoms}
@@ -455,8 +436,8 @@ He                 & $0.2905$ & $-3.2389$ & $1.4477$ & $-0.7239$ & $0$      & $-
 H$_2$ ($R=3.5$)    & $0.0965$ & $-2.1652$ & $1.0595$ & $-0.5298$ & $0.2747$ & $-1.26423$ & $-1.26423$ & 19\\
 \bottomrule
 \end{tabular}
-\caption{The Hartree--Fock (= KS exact exchange) energy split into its terms, in hartree. The two
-routes to $E$ agree to about $10^{-7}$\Ha{} in every case.}
+\caption{The Hartree--Fock (= KS exact exchange) energy split into its terms, in hartree (output 1b). The two
+routes to $E$ differ by $5\times10^{-8}$, $6\times10^{-8}$ and $1\times10^{-8}$\Ha.}
 \label{tab:terms}
 \end{table}
 
@@ -467,15 +448,15 @@ routes to $E$ agree to about $10^{-7}$\Ha{} in every case.}
 System & $I=E(\text{one electron})-E(\text{two electrons})$ & $-\varepsilon_\text{HOMO}$ (RHF) & $\Delta$ & $\delta$ (\%)\\
 \midrule
 He    & $0.7549$ & $0.7503$ & $-0.0046$ & $0.60$\\
-H$^-$ & $0.0606$ & $0.0523$ & $-0.0082$ & $13.6$\\
+H$^-$ & $0.0606$ & $0.0523$ & $-0.0082$ & $13.58$\\
 \bottomrule
 \end{tabular}
-\caption{The HOMO test at $h=0.1$, $L=10$. In exact Kohn--Sham $-\varepsilon_\text{HOMO}=I$; for Hartree--Fock
+\caption{The HOMO test at $h=0.1$, $L=10$ (output 1c). In exact Kohn--Sham $-\varepsilon_\text{HOMO}=I$; for Hartree--Fock
 (Koopmans' theorem) it is only an estimate.}
 \label{tab:homo}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.72\textwidth]{energy_errors.png}
 \caption{Energy error of Hartree--Fock against the exact solution, $E_\text{RHF}-E_\text{exact}=-E_c$, in millihartree.
@@ -483,7 +464,7 @@ H$_2$ is at $R=3.5$.}
 \label{fig:energy}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{densities.png}
 \caption{Top: ground-state densities, exact (solid) and Hartree--Fock (dashed). Bottom: the difference
@@ -496,16 +477,15 @@ $n_\text{RHF}-n_\text{exact}$. Dotted lines mark the nuclei of H$_2$.}
 only $0.014$\Ha{} (0.63\% of the total), so Hartree--Fock is already very good there. In H$^-$ it is
 $0.039$\Ha{}, almost three times larger: the loosely bound electrons have room to avoid each other,
 and a product wavefunction cannot describe that avoidance. The densities in Figure~\ref{fig:dens} tell the
-same story: for He the two curves nearly coincide, while the Hartree--Fock density of H$^-$ is too
-compact (peak 0.61 against 0.55).
+same story (output 1d): for He the peaks nearly agree (0.933 against 0.911), while the Hartree--Fock density
+of H$^-$ is too compact (peak 0.613 against 0.545).
 \end{insight}
 
 \begin{insight}
 \textbf{The HOMO test.} The exact $-\varepsilon_\text{HOMO}$ equals the ionisation energy. Hartree--Fock gets helium
 to 0.6\% (0.7503 against 0.7549\Ha), because $-\tfrac12v_H$ removes the self-interaction exactly and keeps the
 correct $-w(x)$ tail of the potential. For H$^-$ the estimate is off by 14\%: when correlation matters,
-Koopmans' theorem is a rough guide. We could not run the same test for LDA, which is where the
-problem statement expects the largest failure.
+Koopmans' theorem is a rough guide.
 \end{insight}
 
 \begin{insight}
@@ -519,25 +499,24 @@ Helium is converged to $10^{-6}$\Ha{} by $L=8$.
 
 \begin{table}[H]
 \centering
-\begin{tabular}{lrrr}
+\begin{tabular}{lrrrr}
 \toprule
-$h$ (bohr) & $E_\text{exact}$(He) (Ha) & $E_\text{RHF}$(He) (Ha) & Ratio of successive differences\\
+$h$ (bohr) & $E_\text{exact}$(He) & ratio & $E_\text{RHF}$(He) & ratio\\
 \midrule
-0.4          & $-2.24302$ & $-2.22894$ & --\\
-0.2          & $-2.23943$ & $-2.22537$ & --\\
-0.1          & $-2.23855$ & $-2.22450$ & 4.07\\
-0.05         & $-2.23833$ & $-2.22428$ & 4.02\\
-extrapolated & $-2.23826$ & $-2.22421$ & --\\
+0.4          & $-2.243017$ & --   & $-2.228938$ & --\\
+0.2          & $-2.239430$ & --   & $-2.225374$ & --\\
+0.1          & $-2.238550$ & 4.07 & $-2.224500$ & 4.08\\
+0.05         & $-2.238331$ & 4.02 & $-2.224282$ & 4.02\\
+extrapolated & $-2.238258$ & --   & $-2.224209$ & --\\
 \bottomrule
 \end{tabular}
-\caption{Grid-spacing convergence of the helium energy at $L=10$. A ratio of 4 means error $\propto h^2$;
-both solvers give the same ratios.}
+\caption{Grid-spacing convergence of the helium energy at $L=10$, in hartree (output 3a). The ratio of successive
+differences is 4 when the error is $\propto h^2$. Extrapolation uses $h=0.1$ and $0.05$.}
 \label{tab:grid}
 \end{table}
 
-The observed order of convergence follows from three grid spacings $h,2h,4h$:
-$p=\log_2\!\big[(E_{2h}-E_{4h})/(E_h-E_{2h})\big]$. For the data above $p=2.03$ and $2.01$, as expected for a
-three-point second derivative.
+The observed order of convergence, from \texttt{convergence\_order}, is $p=2.03$ and $2.01$ for both solvers, as
+expected for a three-point second derivative.
 
 \begin{table}[H]
 \centering
@@ -552,7 +531,7 @@ $L$ (bohr) & $E_\text{exact}$(He) & $E_\text{exact}$(H$^-$) & $E_\text{RHF}$(H$^
 14 & $-2.238550$ & $-0.730790$ & $-0.692082$ & $0.0538$\\
 \bottomrule
 \end{tabular}
-\caption{Box-size convergence at $h=0.1$ (energies in hartree). Helium is converged by $L=8$; H$^-$ is still
+\caption{Box-size convergence at $h=0.1$, energies in hartree (output 4). Helium is converged by $L=8$; H$^-$ is still
 drifting at $L=14$.}
 \label{tab:box}
 \end{table}
@@ -569,56 +548,56 @@ He              & 110 & 52 & 33 & 23 & 17 & 13 & 10 & 7 & 6 & 8\\
 H$_2$ ($R=3.5$) & 91  & 43 & 27 & 19 & 14 & 11 & 8  & 8 & 12 & 17\\
 \bottomrule
 \end{tabular}
-\caption{SCF iterations to reach $\|n_\text{out}-n_\text{in}\|<10^{-6}$ against the mixing parameter $\alpha$.}
+\caption{SCF iterations to reach $\|n_\text{out}-n_\text{in}\|<10^{-6}$ against the mixing parameter $\alpha$ (output 5a).}
 \label{tab:mix}
 \end{table}
 
 Helium converges for every $\alpha$, fastest just below 1. For H$_2$ at $R=3.5$ the optimum is
 $\alpha\approx0.7$--$0.8$, and plain iteration ($\alpha=1$) is already twice as slow: the extra overshoot between
 the two nuclei is the first sign of the sloshing that stops stretched H$_2$ converging at all
-unless the density is symmetrised.
+unless the density is symmetrised (output 5b).
 
 \subsection{Stretched H\texorpdfstring{$_2$}{2}}
 
 \begin{table}[H]
 \centering
-\begin{tabular}{rrrrr}
+\begin{tabular}{rrrrrrr}
 \toprule
-$R$ & $E_\text{exact}$ & $E_\text{RHF}$ & $\Delta_\text{RHF}=-E_c$ & $\delta_\text{RHF}$ (\%)\\
+$R$ & $E_\text{exact}$ & $E_\text{RHF}$ & $\Delta_\text{RHF}=-E_c$ & $\delta_\text{RHF}$ (\%) & $E_{nn}=w(R)$ & exact electronic\\
 \midrule
-1.0  & $-1.41320$ & $-1.39452$ & $0.01868$ & 1.32\\
-1.5  & $-1.45172$ & $-1.42639$ & $0.02533$ & 1.74\\
-2.0  & $-1.44200$ & $-1.40591$ & $0.03609$ & 2.50\\
-2.5  & $-1.41356$ & $-1.36158$ & $0.05198$ & 3.68\\
-3.0  & $-1.38483$ & $-1.31146$ & $0.07338$ & 5.30\\
-4.0  & $-1.35067$ & $-1.22322$ & $0.12745$ & 9.44\\
-5.0  & $-1.34091$ & $-1.16115$ & $0.17976$ & 13.41\\
-6.0  & $-1.33930$ & $-1.12054$ & $0.21876$ & 16.33\\
-8.0  & $-1.33946$ & $-1.07697$ & $0.26249$ & 19.60\\
-10.0 & $-1.33963$ & $-1.05706$ & $0.28257$ & 21.09\\
+1.0  & $-1.41320$ & $-1.39452$ & $0.01868$ & 1.32  & 0.70711 & $-2.12030$\\
+1.5  & $-1.45172$ & $-1.42639$ & $0.02533$ & 1.74  & 0.55470 & $-2.00642$\\
+2.0  & $-1.44200$ & $-1.40591$ & $0.03609$ & 2.50  & 0.44721 & $-1.88921$\\
+2.5  & $-1.41356$ & $-1.36158$ & $0.05198$ & 3.68  & 0.37139 & $-1.78495$\\
+3.0  & $-1.38483$ & $-1.31146$ & $0.07338$ & 5.30  & 0.31623 & $-1.70106$\\
+4.0  & $-1.35067$ & $-1.22322$ & $0.12745$ & 9.44  & 0.24254 & $-1.59321$\\
+5.0  & $-1.34091$ & $-1.16115$ & $0.17976$ & 13.41 & 0.19612 & $-1.53703$\\
+6.0  & $-1.33930$ & $-1.12054$ & $0.21876$ & 16.33 & 0.16440 & $-1.50370$\\
+8.0  & $-1.33946$ & $-1.07697$ & $0.26249$ & 19.60 & 0.12403 & $-1.46350$\\
+10.0 & $-1.33963$ & $-1.05706$ & $0.28257$ & 21.09 & 0.09950 & $-1.43913$\\
 \bottomrule
 \end{tabular}
-\caption{Stretched 1D H$_2$ at $h=0.1$, with box half-width $L=\max(10,\,R/2+9)$. Nuclear repulsion $w(R)$ is
-included in both columns. Energies in hartree. Mean absolute error over the 10 distances: 0.128\Ha.}
+\caption{Stretched 1D H$_2$ at $h=0.1$, with box half-width $L=\max(10,\,R/2+9)$, energies in hartree (output 2a).
+$E_\text{exact}$ and $E_\text{RHF}$ are total energies (electronic energy plus $E_{nn}$); the last column is the exact
+electronic energy alone. Mean absolute error of RHF over the 10 distances: 0.1276\Ha.}
 \label{tab:h2}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{H2_energy_curve.png}
-\caption{Left: the H$_2$ energy curve. The exact curve has its minimum near $R\approx1.5$--$2$ and dissociates to
-two H atoms ($-1.3397$\Ha, grey line); RHF stays far too high. Right: the RHF error, which equals $|E_c|$
+\caption{Left: the H$_2$ total-energy curve. The exact curve has its minimum near $R\approx1.5$--$2$ and dissociates to
+two H atoms ($-1.33972$\Ha, grey line); RHF stays far too high. Right: the RHF error, which equals $|E_c|$
 and grows to 0.28\Ha.}
 \label{fig:h2}
 \end{figure}
 
 \begin{insight}
 \textbf{Stretching the bond is a qualitative failure, not a small error.} The RHF error rises
-from 0.019\Ha{} at $R=1$ to 0.283\Ha{} at $R=10$ and is still rising. The exact wavefunction shows why:
-at $R=3.5$ the probability that both electrons sit on the same side of the molecule is 0.145 in the exact
-$\Psi$ and 0.485 in the RHF product, close to the 50\% that Section~6 predicts. The problem statement
-expects LDA to fail in the same way; we have not checked this. The lesson stands either way: say
-``approximate functionals fail'', not ``DFT fails''.
+from 0.019\Ha{} at $R=1$ to 0.283\Ha{} at $R=10$ and is still rising. The exact wavefunction shows why
+(output 2b): at $R=3.5$ the probability that both electrons sit on the same side of the molecule is 0.145
+in the exact $\Psi$ and 0.485 in the RHF product, close to the 50\% that Section~6 predicts. The lesson:
+say ``approximate methods fail'', not ``the theory fails''.
 \end{insight}
 
 \subsection{Agreement with the problem statement's reference table}
@@ -639,7 +618,7 @@ $R$ & RHF (reference table) & RHF (this work)\\
 \bottomrule
 \end{tabular}
 \caption{Where the stretched-H$_2$ Hartree--Fock numbers differ from the table that came with the problem
-statement. All values in Ha.}
+statement. All values in Ha; ``this work'' is output 2a.}
 \label{tab:ref}
 \end{table}
 
@@ -684,14 +663,14 @@ $\Delta=(-\varepsilon_\text{HOMO})-I$.
 \begin{equation}
   \text{MAE}=\frac1n\sum_{i=1}^n|\Delta_i|.
 \end{equation}
-Over the 10 distances of Table~\ref{tab:h2}, $\text{MAE}_\text{RHF}=0.128$\Ha.
+Over the 10 distances of Table~\ref{tab:h2}, $\text{MAE}_\text{RHF}=0.1276$\Ha.
 
 \subsection{Numerical (discretisation) uncertainty}
 
-Richardson extrapolation provides its own error estimate. The un-extrapolated error of $E(h)$ is
-about $|E(h)-E(2h)|/3$, which is $0.3$\,mHa for helium at $h=0.1$. A second estimate of the remaining error
+Richardson extrapolation provides its own error estimate (output 3a). The un-extrapolated error of $E(h)$ is
+about $|E(h)-E(2h)|/3$, which is $0.29$\,mHa for helium at $h=0.1$. A second estimate of the remaining error
 is the difference between two extrapolations, from $(0.2,0.1)$ and from $(0.1,0.05)$. For helium these are
-$-2.238257$ and $-2.238258$\Ha, so the extrapolated energy is good to about $10^{-6}$\Ha. The H$_2$ energies
+$-2.238256$ and $-2.238258$\Ha, so the extrapolated energy is good to about $10^{-6}$\Ha. The H$_2$ energies
 are not extrapolated; at $h=0.1$ their grid error should be a few $10^{-4}$\Ha, similar to helium.
 
 \textbf{Propagation.} If $E_\text{exact}$ and $E_\text{HF}$ each carry an independent uncertainty $\sigma$, then
@@ -700,7 +679,7 @@ are not extrapolated; at $h=0.1$ their grid error should be a few $10^{-4}$\Ha, 
   \sigma_{E_c}\le\sigma_\text{exact}+\sigma_\text{HF}\ \ (\text{worst case}).
 \end{equation}
 Because both solvers use the same grid, much of the $h^2$ error cancels in the difference, so $E_c$ is
-more accurate than either energy alone: it is $-0.01405$\Ha{} both at $h=0.1$ and after extrapolation.
+more accurate than either energy alone: it is $-0.01405$\Ha{} both at $h=0.1$ and after extrapolation (output 3b).
 All quoted errors $\Delta$ are far larger than these numerical uncertainties, except for the box-limited H$^-$.
 
 \subsection{Summary of results and errors}
@@ -714,14 +693,14 @@ Quantity & Method & Exact & Value & $\Delta$ & $\delta$ (\%)\\
 He total energy (extrapolated)        & RHF & $-2.2383$ & $-2.2242$ & $0.0140$  & 0.63\\
 He $-\varepsilon_\text{HOMO}$ vs $I$             & RHF & $0.7549$  & $0.7503$  & $-0.0046$ & 0.60\\
 H$^-$ total energy ($L=10$)            & RHF & $-0.7304$ & $-0.6918$ & $0.0386$  & 5.29\\
-H$^-$ $-\varepsilon_\text{HOMO}$ vs $I$ ($L=10$) & RHF & $0.0606$  & $0.0523$  & $-0.0082$ & 13.6\\
+H$^-$ $-\varepsilon_\text{HOMO}$ vs $I$ ($L=10$) & RHF & $0.0606$  & $0.0523$  & $-0.0082$ & 13.58\\
 H$_2$ total energy, $R=2$              & RHF & $-1.4420$ & $-1.4059$ & $0.0361$  & 2.50\\
 H$_2$ total energy, $R=3.5$            & RHF & $-1.3636$ & $-1.2642$ & $0.0993$  & 7.28\\
 H$_2$ total energy, $R=10$             & RHF & $-1.3396$ & $-1.0571$ & $0.2826$  & 21.09\\
 \bottomrule
 \end{tabular}
-\caption{Summary of the comparison with the exact solution (all values in Ha). $\Delta=\text{value}-\text{exact}$,
-$\delta=100|\Delta|/|\text{exact}|$. No LDA rows: LDA was not implemented.}
+\caption{Summary of the comparison with the exact solution (all values in Ha, outputs 1a, 1c, 2a and 3b).
+$\Delta=\text{value}-\text{exact}$, $\delta=100|\Delta|/|\text{exact}|$.}
 \label{tab:summary}
 \end{table}
 
@@ -734,7 +713,42 @@ exactly, which is what makes this toy model a useful benchmark for any functiona
 \end{insight}
 
 % =====================================================================
-\section{Conclusions and next steps}
+\section{Future direction}\label{sec:future}
+
+None of this section was implemented; it is the plan for the phases we did not reach.
+
+\textbf{LDA exchange (Phase 4).} The local density approximation treats every small slice of the system
+as a piece of uniform electron gas at the local density~\cite{capelle,harrison}. A uniform 1D gas has $k_F=\pi n/2$ and density matrix
+$\gamma(x)=(k_F/\pi)\sin(k_Fx)/(k_Fx)$ per spin. Putting $\gamma^2$ into the exchange integral and substituting $t=k_Fx$ gives
+\begin{equation}
+  n\,e_x(n)=-\int_{-\infty}^{\infty}w(x)\,\gamma(x)^2\dd x=-\frac{n^2}{2}J\!\left(\frac{\pi n}{2}\right),\qquad
+  J(k)=\int_0^\infty\frac{\sin^2t}{t^2\sqrt{t^2+k^2}}\dd t,
+\end{equation}
+with $E_x^\text{LDA}=\int n\,e_x(n)\dd x$ and $v_x(n)=\dd[n\,e_x(n)]/\dd n$. At high density $J\approx\pi/(2k_F)$, so
+$e_x\to-\tfrac12$, which is the check the problem statement asks for. $J$ has no closed form, so it would be tabulated
+once and splined in $\ln n$. In our SCF loop only one line would change: $v_\text{eff}=v_\text{ext}+v_H+v_x(n)$ instead of
+$v_\text{ext}+\tfrac12v_H$. The problem statement's reference calculation gives $-2.158$\Ha{} for 1D helium with LDA
+exchange, and an exchange energy of $-0.654$\Ha{} against the exact-exchange $-0.724$\Ha. If that holds, LDA
+misses about 10\% of the exchange, several times the whole correlation energy we measured ($-0.014$\Ha).
+
+\begin{plainwords}
+LDA is like valuing hilly farmland by treating every small patch as flat land at that patch's
+altitude. It is fine where the land changes slowly and wrong near cliffs. Atoms are full of
+cliffs, because the density drops quickly.
+\end{plainwords}
+
+\textbf{Exact $v_{xc}$ by inversion (Phase 6).} For two electrons the Kohn--Sham orbital is exactly $\varphi=\sqrt{n/2}$,
+so our exact density gives the exact potential with no iteration:
+$v_{xc}=\varepsilon+\varphi''/(2\varphi)-v_\text{ext}-v_H$, with $\varepsilon=-I$. Its tail should follow $-w(x)$, while LDA's dies
+exponentially, and for stretched H$_2$ it should grow a peak at the bond midpoint that no local functional
+can reproduce.
+
+\textbf{Also left to do.} LDA correlation (Phase 5); the $Z$ scan (our one-nucleus solvers already take \texttt{Z});
+the softening scan; unrestricted Hartree--Fock for stretched H$_2$; and timing the solvers against grid size to
+measure the scaling of Section~2.
+
+% =====================================================================
+\section{Conclusions}
 
 \textbf{What we achieved.}
 \begin{enumerate}
@@ -746,23 +760,17 @@ exactly, which is what makes this toy model a useful benchmark for any functiona
   \item The exact correlation energy follows directly: $-0.014$\Ha{} for He, $-0.039$\Ha{} for H$^-$, and up to
         $-0.28$\Ha{} for stretched H$_2$, where restricted Hartree--Fock fails qualitatively because of static
         correlation.
-  \item The numerical side is under control: $h^2$ convergence, box size, SCF mixing and the
-        charge-sloshing failure of stretched H$_2$ (and its fix) are all measured.
+  \item The numerical side is under control and reproducible from \texttt{compare.py}: $h^2$ convergence with
+        Richardson extrapolation, box size, SCF mixing, and the charge-sloshing failure of stretched H$_2$ (and its fix).
 \end{enumerate}
 
-\textbf{What we could not do.} We did not implement LDA (M4), LDA correlation (M5) or the exact
-exchange--correlation potential (M6). So the project's central question, \emph{where approximate DFT fails},
-is answered only for the special functional ``exact exchange, no correlation''. The LDA discussion in
-Section~\ref{sec:lda} is theory plus the problem statement's reference numbers. The $Z$ and softening
-scans, the triplet state, spin-unrestricted Hartree--Fock and measured time and memory scaling are also
-missing.
-
-\textbf{Do next.} (i) Implement LDA exchange from Section~\ref{sec:lda} (one changed line in the loop plus the
-$J(k)$ table) and check helium against $-2.158$\Ha; (ii) invert the exact density for $v_{xc}$ (M6) and compare
-its tail with $-\tfrac12v_H$; (iii) run the $Z$ scan, which the solvers already support; (iv) time the exact and
-Kohn--Sham solvers against grid size to measure, rather than argue, the scaling of Section~2.
+\textbf{What we could not do.} We did not implement LDA (Phase 4), LDA correlation (Phase 5) or the exact
+exchange--correlation potential (Phase 6). So the project's central question, \emph{where approximate DFT fails},
+is answered only for the special functional ``exact exchange, no correlation''. Section~\ref{sec:future} describes
+how the remaining phases would be done.
 
 % =====================================================================
+{\small
 \begin{thebibliography}{9}
 \addcontentsline{toc}{section}{References}
 
@@ -781,5 +789,6 @@ London and CLRC Daresbury Laboratory.
 \url{https://www.imperial.ac.uk/media/imperial-college/research-centres-and-groups/computational-materials-science/teaching/DFT_NATO.pdf}
 
 \end{thebibliography}
+}
 
 \end{document}

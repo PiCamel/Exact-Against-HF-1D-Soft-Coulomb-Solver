@@ -20,7 +20,7 @@ def make_grid(L, h): # uniform grid from -L to L with spacing h, odd N so x = 0 
 def w(x, a=A_SOFT):
     return 1.0 / np.sqrt(x**2 + a**2)
 
-def v_1atom(x, Z, a=A_SOFT):# just realized it is better to keep z seperate as compared to within the w function
+def v_1atom(x, Z, a=A_SOFT):# just realized it is better to keep z separate as compared to within the w function
     return -Z * w(x, a)
 
 def v_2atom(x, z, a=A_SOFT, R = 3.5): # nuclei at -R/2 and +R/2, so the internuclear distance is R
@@ -75,3 +75,14 @@ def one_electron(V, h, N): # lowest eigenpair of T + diag(V): one electron, no o
   min_eps, min_phi = s.linalg.eigh_tridiagonal(T.diagonal()+V, T.diagonal(k=1), select="i", select_range=(0,0))
   min_phi = min_phi[:,0]/np.sqrt(h)
   return min_eps[0], min_phi
+
+
+# Grid convergence tools
+
+def richardson(E_h, E_2h): # Richardson extrapolation for an O(h^2) method
+  # E(h) = E0 + c h^2 and E(2h) = E0 + 4 c h^2, so E0 = E(h) + (E(h) - E(2h))/3
+  return E_h + (E_h - E_2h)/3
+
+def convergence_order(E_4h, E_2h, E_h): # observed order p from three spacings 4h, 2h, h
+  # the error shrinks by 2^p each time h is halved, so p = log2[(E_2h - E_4h)/(E_h - E_2h)]
+  return np.log2((E_2h - E_4h)/(E_h - E_2h))
