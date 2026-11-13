@@ -40,10 +40,8 @@ def save(fig, name):
     plt.close(fig)
     print("saved", os.path.join("results", name))
 
-
-# =====================================================================
 # Run every method on every system
-# =====================================================================
+
 res = {}
 for name, solver in SOLVERS.items():
     extra = {"R": R_MAIN} if name == "H2" else {}
@@ -69,9 +67,8 @@ sweep = {m: np.array(v) for m, v in sweep.items()}
 x_big, N_big = make_grid(max(L, R_SWEEP[-1]/2 + 9), H)
 E_H_atom, _ = one_electron(v_ext(1, x_big), H, N_big)
 
-# =====================================================================
+
 # 1. Energy comparisons
-# =====================================================================
 # error of each approximate method against the exact energy, per system
 fig, ax = plt.subplots(figsize=(7, 4))
 xs = np.arange(len(SOLVERS))
@@ -100,9 +97,8 @@ axs[1].set_xlabel("R (bohr)"); axs[1].set_ylabel("$E_{method} - E_{exact}$ (Ha)"
 axs[1].set_title("Error grows as the bond stretches (static correlation)"); axs[1].legend(fontsize=8)
 save(fig, "H2_energy_curve.png")
 
-# =====================================================================
+
 # 2. Density comparisons
-# =====================================================================
 # top row: n(x) for every method; bottom row: n_method(x) - n_exact(x)
 fig, axs = plt.subplots(2, 3, figsize=(13, 7), sharex=True)
 for j, name in enumerate(SOLVERS):
