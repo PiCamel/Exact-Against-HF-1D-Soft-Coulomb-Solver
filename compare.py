@@ -1,8 +1,7 @@
-# Compares the exact, Kohn-Sham (exact exchange = RHF) and LDA solvers on H-, He and H2.
+# Compares the exact and Kohn-Sham (exact exchange = RHF) solvers on H-, He and H2.
 # Two comparisons, saved as plots in results/:
 #   1. Energies:  E_method - E_exact for each system, and the H2 energy curve E(R)
 #   2. Densities: n(x) for each method, and n_method(x) - n_exact(x)
-# The LDA curves appear automatically once all three files in LDA/ define run().
 # Every method uses the same grid for a given system, so the results can be compared point by point.
 
 import os
@@ -13,16 +12,14 @@ import matplotlib.pyplot as plt
 
 from exact import exact_H_minus, exact_He, exact_H2
 from KS import KS_H_minus, KS_He, KS_H2
-from LDA import LDA_H_minus, LDA_He, LDA_H2
 from common import make_grid, v_ext, one_electron
 
-HAS_LDA = all(hasattr(f, "run") for f in (LDA_H_minus, LDA_He, LDA_H2))
-METHODS = ["exact", "KS"] + (["LDA"] if HAS_LDA else [])
+METHODS = ["exact", "KS"]
 APPROX = METHODS[1:] # the approximate (mean-field) methods
 
-SOLVERS = {"H-": {"exact": exact_H_minus, "KS": KS_H_minus, "LDA": LDA_H_minus},
-           "He": {"exact": exact_He,      "KS": KS_He,      "LDA": LDA_He},
-           "H2": {"exact": exact_H2,      "KS": KS_H2,      "LDA": LDA_H2}}
+SOLVERS = {"H-": {"exact": exact_H_minus, "KS": KS_H_minus},
+           "He": {"exact": exact_He,      "KS": KS_He},
+           "H2": {"exact": exact_H2,      "KS": KS_H2}}
 
 H = 0.1                 # grid spacing
 L = 10.0                # box half-width
@@ -30,8 +27,8 @@ R_MAIN = 3.5            # H2 bond length for the single-geometry comparison
 R_SWEEP = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0]
 
 TITLE = {"H-": "H$^-$", "He": "He", "H2": f"H$_2$ (R = {R_MAIN})"}
-COL = {"exact": "#1f1f1f", "KS": "#534AB7", "LDA": "#D85A30"}
-LAB = {"exact": "exact", "KS": "KS exact exchange (= RHF)", "LDA": "KS LDA exchange"}
+COL = {"exact": "#1f1f1f", "KS": "#534AB7"}
+LAB = {"exact": "exact", "KS": "KS exact exchange (= RHF)"}
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "results")
 os.makedirs(OUT, exist_ok=True)
@@ -43,8 +40,6 @@ def save(fig, name):
     plt.close(fig)
     print("saved", os.path.join("results", name))
 
-
-print("LDA:", "included" if HAS_LDA else "LDA/ files have no run() yet, skipping")
 
 # =====================================================================
 # Run every method on every system
