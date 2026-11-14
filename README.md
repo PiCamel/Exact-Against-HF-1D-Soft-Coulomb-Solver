@@ -344,11 +344,9 @@ To be added later. The plan:
 [1] W. Kohn, Electronic structure of matter — wave functions and density functionals, Nobel Lecture, 28
 January 1999. https://www.nobelprize.org/uploads/2018/06/kohn-lecture.pdf
 
-[2] K. Capelle, A bird’s-eye view of density-functional theory, arXiv:cond-mat/0211443. https://arxiv.org/
-pdf/cond-mat/0211443
+[2] K. Capelle, A bird’s-eye view of density-functional theory, arXiv:cond-mat/0211443. https://arxiv.org/pdf/cond-mat/0211443
 
 [3] N. M. Harrison, An introduction to density functional theory, lecture notes, Imperial College London and
-CLRC Daresbury Laboratory. https://www.imperial.ac.uk/media/imperial-college/research-cen
-tres-and-groups/computational-materials-science/teaching/DFT_NATO.pdf
+CLRC Daresbury Laboratory. https://www.imperial.ac.uk/media/imperial-college/research-centres-and-groups/computational-materials-science/teaching/DFT_NATO.pdf
 11
 
